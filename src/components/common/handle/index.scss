@@ -1,0 +1,9 @@
+.handle {
+  cursor: grab;
+  cursor: -webkit-grab;
+  width: .8em;
+
+  .handle__draggable {
+    fill: #ccc;
+  }
+}

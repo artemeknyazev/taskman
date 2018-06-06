@@ -1,0 +1,23 @@
+.task-item {
+  background-color: #fcfbfa;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 1px 1px;
+  display: flex;
+  flex-flow: row nowrap;
+  padding: 0.55em 0.8em;
+
+  .task-item__handle {
+    flex: 0 0 auto;
+    margin-right: 0.8em;
+  }
+  .task-item__text-container {
+    flex: 1 1 auto;
+
+    .task-item__text {
+      font-size: .8em;
+    }
+  }
+
+  &.task-item--selected {
+    background-color: #fdf9f9;
+  }
+}
