@@ -8,19 +8,19 @@ import {
 
 export default [
   {
-    type: 'keyup',
+    type: 'keydown',
     check: ({ key }, { control }) => key === 'ArrowUp' && control,
     callback: (dispatch) => dispatch(moveItemUp()),
   }, {
-    type: 'keyup',
+    type: 'keydown',
     check: ({ key }, { control }) => key === 'ArrowDown' && control,
     callback: (dispatch) => dispatch(moveItemDown()),
   }, {
-    type: 'keyup',
+    type: 'keydown',
     check: ({ key }) => key === 'ArrowUp',
     callback: (dispatch) => dispatch(moveSelectionUp())
   }, {
-    type: 'keyup',
+    type: 'keydown',
     check: ({ key }) => key === 'ArrowDown',
     callback: (dispatch) => dispatch(moveSelectionDown())
   }, {

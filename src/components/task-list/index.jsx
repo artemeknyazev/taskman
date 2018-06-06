@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { AutoSizer, List } from 'react-virtualized'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 import { setSelection, moveItemTo } from 'reducers/index.js'
-import TaskItem from './task-item'
+import TaskItem, { TaskItemScrolling } from './task-item'
 
 import './index.scss'
 
@@ -14,27 +14,17 @@ const SortableTaskList = SortableContainer(List)
 class TaskList extends React.Component {
   constructor(props) {
     super(props)
-    this.state = { list: [] }
     this.renderRow = this.renderRow.bind(this)
     this.onSortEnd = this.onSortEnd.bind(this)
   }
 
-  static getDerivedStateFromProps(props, state) {
-    const { list } = props
-    return { list }
-  }
-
   renderRow(props) {
-    console.log(props)
     const { list, selected, onItemClick } = this.props
-    const { index, key, style } = props
+    const { index, key, style, isScrolling } = props
     const { id, text } = list[index]
-    return (
-      <div
-        key={key}
-        style={style}
-        className="task-list__task-item-container noselect"
-      >
+    const elem = isScrolling ? (
+        <TaskItemScrolling />
+      ) : (
         <SortableTaskItem
           index={index}
           id={id}
@@ -42,6 +32,14 @@ class TaskList extends React.Component {
           selected={index === selected}
           onItemClick={() => onItemClick(index)}
         />
+      )
+    return (
+      <div
+        key={key}
+        style={style}
+        className="task-list__task-item-container noselect"
+      >
+        {elem}
       </div>
     )
   }
@@ -52,8 +50,7 @@ class TaskList extends React.Component {
   }
 
   render() {
-    const { list } = this.state
-    const { defaultHeight, defaultWidth, selected } = this.props
+    const { defaultHeight, defaultWidth, list, selected } = this.props
     return (
       <AutoSizer
         defaultHeight={defaultHeight}
@@ -61,8 +58,7 @@ class TaskList extends React.Component {
       >
         {({ height, width }) => (
           <SortableTaskList
-            axis="y"
-            lockAxis="y"
+            lockAxis={'y'}
             distance={4}
             className="task-list"
             width={width}
@@ -73,6 +69,7 @@ class TaskList extends React.Component {
             rowRenderer={this.renderRow}
             onSortEnd={this.onSortEnd}
             /* note: rerenders when one of the props below has changed */
+            scrollToIndex={selected}
             list={list}
             selected={selected}
           />

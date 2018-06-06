@@ -10,7 +10,7 @@ import TaskList from 'components/task-list'
 import './index.scss'
 
 const AppDocumentShortcuts = connect()(DocumentShortcuts)
-window.onload = () =>
+window.onload = () => {
   render(
     <Provider store={store}>
       <AppDocumentShortcuts shortcuts={shortcuts}>
@@ -19,3 +19,11 @@ window.onload = () =>
     </Provider>,
     document.getElementById('root')
   )
+}
+
+// prevent default scroll behavior because virtualized list
+// scrolls and rerenders too
+window.addEventListener('keydown', (e) => {
+  if ([32, 37, 38, 39, 40].includes(e.keyCode))
+    e.preventDefault();
+});

@@ -26,4 +26,15 @@ TaskItem.propTypes = {
   onItemClick: PropTypes.func.isRequired,
 }
 
+export const TaskItemScrolling = () => (
+  <div
+    className="task-item"
+  >
+    <Handle className="task-item__handle" />
+    <div className="task-item__text-container">
+      <span className="task-item__text">&#8230;</span>
+    </div>
+  </div>
+)
+
 export default TaskItem
