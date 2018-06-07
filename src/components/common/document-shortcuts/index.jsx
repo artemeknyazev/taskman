@@ -19,7 +19,16 @@ class DocumentShortcuts extends React.Component {
   }
 
   processEvent(event) {
-    // todo: either preventDefault in inputs, or check if event.target is a writable DOM node (input, textarea)
+    // HACK: shortcuts should be explicitly allowed on nodes with text editing
+    // NOTE: there's also a contentEditable property allowing to edit any node's content
+    // FIXME: use a more general approach later
+    const isEditableTarget = ["INPUT", "TEXTAREA"].includes(event.target.tagName)
+
+    // NOTE: prevents default scroll behavior because virtualized lists scroll and rerender too
+    if (!isEditableTarget && this.props.isPreventKeyboardScroll)
+      if ([ "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight" ].includes(event.key))
+        event.preventDefault();
+
     const enabled = event.type === 'keydown'
     if (event.key === 'Alt')
       this.setState({ alt: enabled })
@@ -30,12 +39,16 @@ class DocumentShortcuts extends React.Component {
     else if (event.key === 'Shift')
       this.setState({ shift: enabled })
     else if (this.props.shortcuts && this.props.shortcuts.length)
-      this.processShortcut(event)
+      this.processShortcut(event.type, event.key, isEditableTarget)
   }
 
-  processShortcut(event) {
+  processShortcut(type, key, isEditableTarget) {
     for (let shortcut of this.props.shortcuts)
-      if (event.type === shortcut.type && shortcut.check(event, this.state))
+      if (
+        type === shortcut.type &&
+        (isEditableTarget ? shortcut.allowOnEditableTarget : true) &&
+        shortcut.check(key, this.state)
+      )
         return shortcut.callback(this.props.dispatch)
   }
 
@@ -49,6 +62,7 @@ DocumentShortcuts.displayName = 'DocumentShortcuts'
 DocumentShortcuts.defaultProps = {
   shortcuts: [],
   dispatch: () => undefined,
+  isPreventKeyboardScroll: false,
 }
 
 DocumentShortcuts.propTypes = {
@@ -57,9 +71,10 @@ DocumentShortcuts.propTypes = {
       type: PropTypes.oneOf([ 'keydown', 'keyup' ]).isRequired,
       check: PropTypes.func.isRequired,
       callback: PropTypes.func.isRequired,
-    })
+    }).isRequired
   ),
   dispatch: PropTypes.func,
+  isPreventKeyboardScroll: PropTypes.bool,
 }
 
 export default DocumentShortcuts
