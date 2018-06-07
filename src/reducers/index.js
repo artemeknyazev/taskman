@@ -7,6 +7,7 @@ const SET_SELECTION = 'SET_SELECTION'
 const MOVE_ITEM_UP = 'MOVE_ITEM_UP'
 const MOVE_ITEM_DOWN = 'MOVE_ITEM_DOWN'
 const MOVE_ITEM_TO = 'MOVE_ITEM_TO'
+const DELETE_SELECTED_ITEM = 'DELETE_SELECTED_ITEM'
 
 export const clearSelection = () => ({
   type: CLEAR_SELECTION
@@ -39,14 +40,21 @@ export const moveItemTo = (oldIndex, newIndex) => ({
   newIndex,
 })
 
-let list = []
+export const deleteSelectedItem = () => ({
+  type: DELETE_SELECTED_ITEM,
+})
+
+let initialList = []
 for (let i = 0; i < 20000; ++i) {
   let text = i.toString() + ' (' + (i+1) + ', ' + (i+2) + ')'
-  list.push({ id: i, text })
+  initialList.push({ id: i, text })
 }
 
 const reducer = (
-  state = { selected: -1, list },
+  state = {
+    selected: -1,
+    list: initialList
+  },
   action
 ) => {
   switch (action.type) {
@@ -58,10 +66,10 @@ const reducer = (
     }
 
     case MOVE_SELECTION_UP: {
-      let selected = state.selected === -1 ? list.length-1 : state.selected-1
+      let selected = state.selected === -1 ? state.list.length-1 : state.selected-1
       return {
         ...state,
-        selected: clamp(selected, 0, list.length-1),
+        selected: clamp(selected, 0, state.list.length-1),
       }
     }
 
@@ -69,7 +77,7 @@ const reducer = (
       let selected = state.selected === -1 ? 0 : state.selected+1
       return {
         ...state,
-        selected: clamp(selected, 0, list.length-1),
+        selected: clamp(selected, 0, state.list.length-1),
       }
     }
 
@@ -77,7 +85,7 @@ const reducer = (
       const { selected } = action
       return {
         ...state,
-        selected: clamp(selected, 0, list.length-1),
+        selected: clamp(selected, 0, state.list.length-1),
       }
     }
 
@@ -110,6 +118,21 @@ const reducer = (
         ...state,
         selected: newIndex,
         list: arrayMove(list, oldIndex, newIndex),
+      }
+    }
+
+    case DELETE_SELECTED_ITEM: {
+      const { selected, list } = state
+      if (selected === -1) return state
+      const newList = [ ...list ]
+      newList.splice(selected, 1)
+      let newSelected = newList.length > 0
+        ? clamp(selected, 0, newList.length - 1)
+        : -1
+      return {
+        ...state,
+        selected: newSelected,
+        list: newList,
       }
     }
   }

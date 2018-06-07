@@ -4,6 +4,7 @@ import {
   moveItemDown,
   moveSelectionUp,
   moveSelectionDown,
+  deleteSelectedItem,
 } from 'reducers'
 
 export default [
@@ -23,6 +24,10 @@ export default [
     type: 'keydown',
     check: (key) => key === 'ArrowDown',
     callback: (dispatch) => dispatch(moveSelectionDown()),
+  }, {
+    type: 'keyup',
+    check: (key) => key === 'Delete' || key === 'Backspace',
+    callback: (dispatch) => dispatch(deleteSelectedItem()),
   }, {
     type: 'keyup',
     check: (key) => key === 'Escape',
