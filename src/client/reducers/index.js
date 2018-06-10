@@ -61,7 +61,7 @@ export const cancelItemEdit = () => ({
 })
 
 let initialList = []
-for (let i = 0; i < 20000; ++i) {
+for (let i = 0; i < 50; ++i) {
   let text = i.toString() + ' (' + (i+1) + ', ' + (i+2) + ')'
   initialList.push({ id: i, text })
 }

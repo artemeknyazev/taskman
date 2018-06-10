@@ -1,24 +1,19 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Provider, connect } from 'react-redux'
+
+import { Provider } from 'react-redux'
 
 import store from 'store'
-import shortcuts from './shortcuts'
-import DocumentShortcuts from 'components/common/document-shortcuts'
-import TaskList from 'components/task-list'
+import App from 'components/app'
 
-import './index.scss'
+const initialState = window.__INITIAL_STATE__
+delete window.__INITIAL_STATE__
+const store_ = store(initialState)
 
-const AppDocumentShortcuts = connect()(DocumentShortcuts)
 window.onload = () => {
-  ReactDOM.render(
-    <Provider store={store}>
-      <AppDocumentShortcuts
-        shortcuts={shortcuts}
-        isPreventKeyboardScroll={true}
-      >
-        <TaskList defaultHeight={100} defaultWidth={500} />
-      </AppDocumentShortcuts>
+  ReactDOM.hydrate(
+    <Provider store={store_}>
+      <App />
     </Provider>,
     document.getElementById('root')
   )

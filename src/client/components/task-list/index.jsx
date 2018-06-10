@@ -10,7 +10,7 @@ import {
   stopItemEdit,
   cancelItemEdit,
 } from 'reducers/index.js'
-import TaskItem, { TaskItemScrolling } from './task-item'
+import TaskItem from './task-item'
 
 import './index.scss'
 
@@ -74,23 +74,22 @@ class TaskList extends React.Component {
     const { id, text } = list[index]
     const isItemSelected = selected === index
     const isItemEditing = isItemSelected && isEditing
-    const elem = isScrolling ? (
-        <TaskItemScrolling />
-      ) : (
-        <SortableTaskItem
-          index={index}
-          id={id}
-          text={text}
-          isSelected={isItemSelected}
-          isEditing={isItemEditing}
-          onItemClick={() => onItemClick(index)}
-          inputText={isItemEditing ? editingText : ''}
-          inputRef={this._inputRef}
-          onTextClick={isItemEditing ? null : onTextClick}
-          onTextChange={isItemEditing ? this._onItemTextChange : null}
-          onTextKeyUp={isItemEditing ? this._onItemTextKeyUp : null}
-        />
-      )
+    // TODO: check why selecting an item and then scrolling is laggy
+    const elem = (
+      <SortableTaskItem
+        index={index}
+        id={id}
+        text={text}
+        isSelected={isItemSelected}
+        isEditing={isItemEditing}
+        onItemClick={() => onItemClick(index)}
+        inputText={isItemEditing ? editingText : ''}
+        inputRef={this._inputRef}
+        onTextClick={isItemEditing ? null : onTextClick}
+        onTextChange={isItemEditing ? this._onItemTextChange : null}
+        onTextKeyUp={isItemEditing ? this._onItemTextKeyUp : null}
+      />
+    )
     return (
       <div
         key={key}

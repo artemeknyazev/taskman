@@ -1,6 +1,5 @@
 const path = require('path')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const nodeEnv = process.env.NODE_ENV || 'development'
 
@@ -25,16 +24,17 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: 'bundle.css',
     }),
-    new CopyWebpackPlugin([ { from: path.resolve(__dirname, 'index.html') } ]),
   ],
   entry: path.resolve(__dirname, 'index.js'),
   resolve: {
     extensions: [ '.js', '.jsx' ],
     alias: {
+      /* Client aliases */
       components: path.resolve(__dirname, 'components'),
       reducers: path.resolve(__dirname, 'reducers'),
       store: path.resolve(__dirname, 'store'),
-      utils: path.resolve(__dirname, 'utils'),
+      /* Utils aliases */
+      utils: path.resolve(__dirname, '..', 'utils'),
     },
   },
   module: {

@@ -6,6 +6,7 @@
     "module": "es6",
     "moduleResolution": "node",
     "paths": {
+      "client/*": [ "../client/*" ],
       "models/*": [ "models/*" ],
       "routes/*": [ "routes/*" ],
       "routes": [ "routes" ],
