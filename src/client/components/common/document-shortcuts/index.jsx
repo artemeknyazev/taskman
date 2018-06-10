@@ -25,6 +25,7 @@ class DocumentShortcuts extends React.Component {
     const isEditableTarget = ["INPUT", "TEXTAREA"].includes(event.target.tagName)
 
     // NOTE: prevents default scroll behavior because virtualized lists scroll and rerender too
+    // FIXME: Ctrl+Arrow on editable targets results in scroll too!
     if (!isEditableTarget && this.props.isPreventKeyboardScroll)
       if ([ "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight" ].includes(event.key))
         event.preventDefault();

@@ -5,6 +5,7 @@ import {
   moveSelectionUp,
   moveSelectionDown,
   deleteSelectedItem,
+  startItemEdit,
 } from 'reducers'
 
 export default [
@@ -32,5 +33,9 @@ export default [
     type: 'keyup',
     check: (key) => key === 'Escape',
     callback: (dispatch) => dispatch(clearSelection()),
+  }, {
+    type: 'keyup',
+    check: (key) => key === 'Enter',
+    callback: (dispatch) => dispatch(startItemEdit())
   }
 ]

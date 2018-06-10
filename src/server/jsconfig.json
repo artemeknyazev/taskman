@@ -1,21 +1,21 @@
 {
   "compilerOptions": {
-    "baseUrl": "./src",
+    "baseUrl": "./",
     "checkJs": true,
     "jsx": "preserve",
     "module": "es6",
     "moduleResolution": "node",
     "paths": {
-      "components/*": [ "components/*" ],
-      "reducers": [ "reducers/index.js" ],
-      "reducers/*": [ "reducers/*" ],
-      "store": [ "store/index.js" ],
-      "utils": [ "utils/index.js" ]
+      "models/*": [ "models/*" ],
+      "routes/*": [ "routes/*" ],
+      "routes": [ "routes" ],
+      "utils/*": [ "utils" ],
+      "utils": [ "utils" ]
     },
     "target": "esnext"
   },
   "include": [
-    "./src/**/*"
+    "./**/*"
   ],
   "exclude": [
     "./dist",

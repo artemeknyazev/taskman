@@ -1,5 +1,5 @@
 import React from 'react'
-import { render } from 'react-dom'
+import ReactDOM from 'react-dom'
 import { Provider, connect } from 'react-redux'
 
 import store from 'store'
@@ -11,7 +11,7 @@ import './index.scss'
 
 const AppDocumentShortcuts = connect()(DocumentShortcuts)
 window.onload = () => {
-  render(
+  ReactDOM.render(
     <Provider store={store}>
       <AppDocumentShortcuts
         shortcuts={shortcuts}
