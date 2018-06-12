@@ -1,5 +1,3 @@
-# TaskMan
+# Taskman
 
-Task Man (from task manager) is a sample task-management app built using React, Redux and Express
-
-Development stage: very early =)
+Taskman _(from **Task** **Man**ager)_ is a sample task-management app built using React, Redux and Express

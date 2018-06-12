@@ -6,7 +6,7 @@ import {
   addTask,
   editTask,
   deleteTask,
-} from 'models/tasks'
+} from 'server/models/tasks'
 
 // TODO: check response statuses
 // TODO: api-specific error handlers

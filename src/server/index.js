@@ -6,11 +6,11 @@ import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { Provider } from 'react-redux'
 
-import store from './../client/store'
-import App from './../client/components/app'
+import createAppStore from 'client/store'
+import App from 'client/components/app'
 
-import routes from 'routes'
-import indexHtml from './index.html.js'
+import routes from 'server/routes'
+import indexHtml from './index-html'
 
 const port = process.env.PORT || 8080
 
@@ -22,11 +22,11 @@ app.use(express.static(path.resolve(__dirname, 'public')))
 app.use('/', routes)
 
 app.get('*', (req, res) => {
-  const title = "Test"
-  const store_ = store()
-  const initialState = JSON.stringify(store_.getState())
+  const title = "Taskman"
+  const store = createAppStore()
+  const initialState = JSON.stringify(store.getState())
   const content = renderToString(
-    <Provider store={store_}>
+    <Provider store={store}>
       <App />
     </Provider>,
   )

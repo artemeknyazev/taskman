@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import cx from 'classnames'
 
-import Handle from 'components/common/handle'
+import Handle from 'client/components/common/handle'
 import './index.scss'
 
 const TaskItem = ({

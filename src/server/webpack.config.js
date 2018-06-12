@@ -18,15 +18,8 @@ module.exports = {
   resolve: {
     extensions: [ '.js', '.jsx', '.json' ],
     alias: {
-      /* Server aliases */
       client: path.resolve(__dirname, '..', 'client'),
-      models: path.resolve(__dirname, 'models'),
-      routes: path.resolve(__dirname, 'routes'),
-      /* Client aliases; required for SSR */
-      components: path.resolve(__dirname, '..', 'client', 'components'),
-      reducers: path.resolve(__dirname, '..', 'client', 'reducers'),
-      store: path.resolve(__dirname, '..', 'client', 'store'),
-      /* Utils alias */
+      server: path.resolve(__dirname),
       utils: path.resolve(__dirname, '..', 'utils'),
     }
   },

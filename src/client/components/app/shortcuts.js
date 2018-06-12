@@ -6,7 +6,7 @@ import {
   moveSelectionDown,
   deleteSelectedItem,
   startItemEdit,
-} from 'reducers'
+} from 'client/reducers'
 
 export default [
   {

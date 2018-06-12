@@ -9,7 +9,7 @@ import {
   startItemEdit,
   stopItemEdit,
   cancelItemEdit,
-} from 'reducers/index.js'
+} from 'client/reducers/index.js'
 import TaskItem from './task-item'
 
 import './index.scss'

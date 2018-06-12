@@ -8,11 +8,11 @@ const constraints = {
     presence: true,
     length: {
       minimum: 3,
-      message: 'must be at least 3 characters'
+      message: 'must be at least 3 characters',
     }
   },
   completed: {
-    inclusion: [ "true", "false", "1", "0", 1, 0, true, false ]
+    inclusion: [ "true", "false", "1", "0", 1, 0, true, false ],
   }
 }
 

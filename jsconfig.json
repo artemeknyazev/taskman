@@ -1,21 +1,21 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
+    "baseUrl": "./src",
     "checkJs": true,
     "jsx": "preserve",
     "module": "es6",
     "moduleResolution": "node",
     "paths": {
-      "components/*": [ "components/*" ],
-      "reducers": [ "reducers/index.js" ],
-      "reducers/*": [ "reducers/*" ],
-      "store": [ "store/index.js" ],
-      "utils": [ "utils/index.js" ]
+      "client/*": [ "client/*" ],
+      "sesrver/*": [ "server/*" ],
+      "utils/*": [ "utils/*" ],
+      "utils": [ "utils" ]
     },
     "target": "esnext"
   },
   "include": [
-    "./**/*"
+    "./db/**/*",
+    "./src/**/*"
   ],
   "exclude": [
     "./dist",

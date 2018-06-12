@@ -29,11 +29,7 @@ module.exports = {
   resolve: {
     extensions: [ '.js', '.jsx' ],
     alias: {
-      /* Client aliases */
-      components: path.resolve(__dirname, 'components'),
-      reducers: path.resolve(__dirname, 'reducers'),
-      store: path.resolve(__dirname, 'store'),
-      /* Utils aliases */
+      client: path.resolve(__dirname),
       utils: path.resolve(__dirname, '..', 'utils'),
     },
   },
