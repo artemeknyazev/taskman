@@ -1,80 +1,135 @@
 import { clamp, arrayMove } from 'utils'
+import { getTasks } from 'client/api/tasks'
+
+const FETCH_TASKS = 'FETCH_TASKS'
+const fetchTasksAction = (
+  error = null,
+  result = null,
+) => ({
+  type: FETCH_TASKS,
+  error,
+  result,
+})
+export const fetchTasks = (
+  filter = {},
+  offset = undefined,
+  limit = undefined,
+) =>
+  (dispatch, getState) =>
+    new Promise((resolve) => {
+      dispatch(fetchTasksAction())
+      getTasks(filter, offset, limit)
+        .then(
+          ({ result }) => dispatch(fetchTasksAction(null, result)),
+          ({ error }) => dispatch(fetchTasksAction(error))
+        )
+        .then(resolve)
+    })
 
 const CLEAR_SELECTION = 'CLEAR_SELECTION'
-const MOVE_SELECTION_UP = 'MOVE_SELECTION_UP'
-const MOVE_SELECTION_DOWN = 'MOVE_SELECTION_DOWN'
-const SET_SELECTION = 'SET_SELECTION'
-const MOVE_ITEM_UP = 'MOVE_ITEM_UP'
-const MOVE_ITEM_DOWN = 'MOVE_ITEM_DOWN'
-const MOVE_ITEM_TO = 'MOVE_ITEM_TO'
-const DELETE_SELECTED_ITEM = 'DELETE_SELECTED_ITEM'
-const START_SELECTED_ITEM_EDIT = 'START_ITEM_EDIT'
-const STOP_SELECTED_ITEM_EDIT = 'STOP_ITEM_EDIT'
-const CANCEL_SELECTED_ITEM_EDIT = 'CANCEL_ITEM_EDIT'
-
 export const clearSelection = () => ({
   type: CLEAR_SELECTION
 })
 
+const MOVE_SELECTION_UP = 'MOVE_SELECTION_UP'
 export const moveSelectionUp = () => ({
   type: MOVE_SELECTION_UP
 })
 
+const MOVE_SELECTION_DOWN = 'MOVE_SELECTION_DOWN'
 export const moveSelectionDown = () => ({
   type: MOVE_SELECTION_DOWN
 })
 
+const SET_SELECTION = 'SET_SELECTION'
 export const setSelection = (selected) => ({
   type: SET_SELECTION,
   selected
 })
 
+const MOVE_ITEM_UP = 'MOVE_ITEM_UP'
 export const moveItemUp = () => ({
   type: MOVE_ITEM_UP
 })
 
+const MOVE_ITEM_DOWN = 'MOVE_ITEM_DOWN'
 export const moveItemDown = () => ({
   type: MOVE_ITEM_DOWN
 })
 
+const MOVE_ITEM_TO = 'MOVE_ITEM_TO'
 export const moveItemTo = (oldIndex, newIndex) => ({
   type: MOVE_ITEM_TO,
   oldIndex,
   newIndex,
 })
 
+const DELETE_SELECTED_ITEM = 'DELETE_SELECTED_ITEM'
 export const deleteSelectedItem = () => ({
   type: DELETE_SELECTED_ITEM,
 })
 
+const START_SELECTED_ITEM_EDIT = 'START_ITEM_EDIT'
 export const startItemEdit = () => ({
   type: START_SELECTED_ITEM_EDIT,
 })
 
+const STOP_SELECTED_ITEM_EDIT = 'STOP_ITEM_EDIT'
 export const stopItemEdit = (text) => ({
   type: STOP_SELECTED_ITEM_EDIT,
   text,
 })
 
+const CANCEL_SELECTED_ITEM_EDIT = 'CANCEL_ITEM_EDIT'
 export const cancelItemEdit = () => ({
   type: CANCEL_SELECTED_ITEM_EDIT,
 })
 
-let initialList = []
-for (let i = 0; i < 50; ++i) {
-  let text = i.toString() + ' (' + (i+1) + ', ' + (i+2) + ')'
-  initialList.push({ id: i, text })
-}
+const APP_INIT_START = 'INIT_APP'
+const appInitStartAction = () => ({
+  type: APP_INIT_START,
+})
+const APP_INIT_FINISH = 'APP_INITED'
+const appInitFinishAction = () => ({
+  type: APP_INIT_FINISH,
+})
+export const appInit = () =>
+  (dispatch) => {
+    dispatch(appInitStartAction())
+    return dispatch(fetchTasks())
+      .then(dispatch(appInitFinishAction()))
+  }
 
 const reducer = (
   state = {
-    selected: -1,
     isEditing: false,
-    list: initialList,
+    isFetching: false,
+    list: [],
+    selected: -1,
   },
   action
 ) => {
   switch (action.type) {
+    case FETCH_TASKS: {
+      if (action.result) {
+        return {
+          ...state,
+          isFetching: false,
+          list: action.result.collection,  
+        }
+      } else if (action.error) {
+        return {
+          ...state,
+          isFetching: false,
+        }
+      } else {
+        return {
+          ...state,
+          isFetching: true,
+        }
+      }
+    }
+
     case CLEAR_SELECTION: {
       return {
         ...state,

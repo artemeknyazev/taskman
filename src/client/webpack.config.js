@@ -1,7 +1,10 @@
 const path = require('path')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const { DefinePlugin } = require('webpack')
 
 const nodeEnv = process.env.NODE_ENV || 'development'
+const isDevelopment = nodeEnv === 'development'
+const isProduction = nodeEnv === 'production'
 
 module.exports = {
   name: 'client',
@@ -23,6 +26,12 @@ module.exports = {
   plugins: [
     new MiniCssExtractPlugin({
       filename: 'bundle.css',
+    }),
+    new DefinePlugin({
+      IS_DEVELOPMENT: isDevelopment,
+      IS_PRODUCTION: isProduction,
+      IS_CLIENT: true,
+      IS_SERVER: false,
     }),
   ],
   entry: path.resolve(__dirname, 'index.js'),

@@ -7,6 +7,7 @@ import { renderToString } from 'react-dom/server'
 import { Provider } from 'react-redux'
 
 import createAppStore from 'client/store'
+import { appInit } from 'client/reducers'
 import App from 'client/components/app'
 
 import routes from 'server/routes'
@@ -24,13 +25,15 @@ app.use('/', routes)
 app.get('*', (req, res) => {
   const title = "Taskman"
   const store = createAppStore()
-  const initialState = JSON.stringify(store.getState())
-  const content = renderToString(
-    <Provider store={store}>
-      <App />
-    </Provider>,
-  )
-  res.send(indexHtml({ title, content, initialState }))
+  store.dispatch(appInit()).then(() => {
+    const initialState = JSON.stringify(store.getState())
+    const content = renderToString(
+      <Provider store={store}>
+        <App />
+      </Provider>,
+    )
+    res.send(indexHtml({ title, content, initialState }))
+  })
 })
 
 app.listen(port, () => {

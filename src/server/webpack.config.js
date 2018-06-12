@@ -1,8 +1,10 @@
 const path = require('path')
 const nodeExternals = require('webpack-node-externals')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const { DefinePlugin } = require('webpack')
 
 const nodeEnv = process.env.NODE_ENV || 'development'
+const isDevelopment = nodeEnv === 'development'
+const isProduction = nodeEnv === 'production'
 
 module.exports = {
   name: 'server',
@@ -15,6 +17,14 @@ module.exports = {
     __filename: false,
   },
   externals: [ nodeExternals() ],
+  plugins: [
+    new DefinePlugin({
+      IS_DEVELOPMENT: isDevelopment,
+      IS_PRODUCTION: isProduction,
+      IS_CLIENT: false,
+      IS_SERVER: true,
+    })
+  ],
   resolve: {
     extensions: [ '.js', '.jsx', '.json' ],
     alias: {
