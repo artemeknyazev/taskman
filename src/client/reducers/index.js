@@ -1,5 +1,8 @@
 import { clamp, arrayMove } from 'utils'
-import { getTasks } from 'client/api/tasks'
+import {
+  getTasks,
+  deleteTask,
+} from 'client/api/tasks'
 
 const FETCH_TASKS = 'FETCH_TASKS'
 const fetchTasksAction = (
@@ -15,16 +18,13 @@ export const fetchTasks = (
   offset = undefined,
   limit = undefined,
 ) =>
-  (dispatch, getState) =>
-    new Promise((resolve) => {
-      dispatch(fetchTasksAction())
-      getTasks(filter, offset, limit)
-        .then(
-          ({ result }) => dispatch(fetchTasksAction(null, result)),
-          ({ error }) => dispatch(fetchTasksAction(error))
-        )
-        .then(resolve)
-    })
+  (dispatch, getState) => {
+    dispatch(fetchTasksAction())
+    return getTasks(filter, offset, limit).then(
+      ({ result }) => dispatch(fetchTasksAction(null, result)),
+      ({ error }) => dispatch(fetchTasksAction(error))
+    )
+  }
 
 const CLEAR_SELECTION = 'CLEAR_SELECTION'
 export const clearSelection = () => ({
@@ -64,10 +64,29 @@ export const moveItemTo = (oldIndex, newIndex) => ({
   newIndex,
 })
 
-const DELETE_SELECTED_ITEM = 'DELETE_SELECTED_ITEM'
-export const deleteSelectedItem = () => ({
-  type: DELETE_SELECTED_ITEM,
+const DELETE_ITEM = 'DELETE_ITEM'
+const deleteItemAction = (id, error, result) => ({
+  type: DELETE_ITEM,
+  id,
+  error,
+  result,
 })
+export const deleteItem = (id) =>
+  (dispatch) => {
+    dispatch(deleteItemAction(id))
+    return deleteTask(id).then(
+      ({ result }) => dispatch(deleteItemAction(id, null, result)),
+      ({ error }) => dispatch(deleteItemAction(id, error)),
+    )
+  }
+export const deleteSelectedItem = () =>
+  (dispatch, getState) => {
+    const { list, selected } = getState()
+    if (selected === -1)
+      return Promise.resolve()
+    const { id } = list[selected]
+    return dispatch(deleteItem(id))
+  }
 
 const START_SELECTED_ITEM_EDIT = 'START_ITEM_EDIT'
 export const startItemEdit = () => ({
@@ -85,19 +104,16 @@ export const cancelItemEdit = () => ({
   type: CANCEL_SELECTED_ITEM_EDIT,
 })
 
-const APP_INIT_START = 'INIT_APP'
-const appInitStartAction = () => ({
-  type: APP_INIT_START,
-})
-const APP_INIT_FINISH = 'APP_INITED'
-const appInitFinishAction = () => ({
-  type: APP_INIT_FINISH,
+const APP_INIT = 'INIT_APP'
+const appInitAction = (result) => ({
+  type: APP_INIT,
+  result,
 })
 export const appInit = () =>
   (dispatch) => {
-    dispatch(appInitStartAction())
+    dispatch(appInitAction())
     return dispatch(fetchTasks())
-      .then(dispatch(appInitFinishAction()))
+      .then(dispatch(appInitAction(true)))
   }
 
 const reducer = (
@@ -115,7 +131,7 @@ const reducer = (
         return {
           ...state,
           isFetching: false,
-          list: action.result.collection,  
+          list: action.result.collection,
         }
       } else if (action.error) {
         return {
@@ -199,19 +215,22 @@ const reducer = (
       }
     }
 
-    case DELETE_SELECTED_ITEM: {
-      const { selected, list } = state
-      if (selected === -1) return state
-      const newList = [ ...list ]
-      newList.splice(selected, 1)
-      let newSelected = newList.length > 0
-        ? clamp(selected, 0, newList.length - 1)
-        : -1
-      return {
-        ...state,
-        isEditing: false,
-        selected: newSelected,
-        list: newList,
+    case DELETE_ITEM: {
+      if (action.result) {
+        const { selected, list } = state
+        const index = list.findIndex(({ id }) => action.id === id)
+        const newList = list.slice()
+        newList.splice(index, 1)
+        let newSelected = selected !== -1 && newList.length
+          ? clamp(selected, 0, newList.length - 1)
+          : -1
+        return {
+          ...state,
+          selected: newSelected,
+          list: newList,
+        }
+      } else {
+        return state
       }
     }
 

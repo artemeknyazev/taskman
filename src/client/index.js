@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom'
 
 import { Provider } from 'react-redux'
 
-import createAppStore from 'client/store'
+import configureStore from 'client/store'
 import App from 'client/components/app'
 
 const initialState = window.__INITIAL_STATE__
 delete window.__INITIAL_STATE__
-const store = createAppStore(initialState)
+const store = configureStore(initialState)
 
 window.onload = () => {
   ReactDOM.hydrate(

@@ -23,7 +23,7 @@ router.get('/', (req, res) => {
     res.status(200)
     res.set({ 'Content-Type': 'application/json' })
     res.json({
-      result: { count, offset, limit, collection }
+      result: { count, offset, limit, collection },
     })
   })
 })
@@ -34,14 +34,14 @@ router.post('/', (req, res) => {
       res.status(200)
       res.set({ 'Content-Type': 'application/json' })
       res.json({
-        result: result
+        result: result,
       })
     },
     error => {
       res.status(422)
       res.set({ 'Content-Type': 'application/json' })
       res.json({
-        error: error
+        error: error,
       })
     }
   )
@@ -54,14 +54,14 @@ router.get('/:id', (req, res) => {
       res.status(200)
       res.set({ 'Content-Type': 'application/json' })
       res.json({
-        result: result
+        result: result,
       })
     },
     () => {
       res.status(404)
       res.set({ 'Content-Type': 'application/json' })
       res.json({
-        error: "Task not found"
+        error: "Task not found",
       })
     }
   )
@@ -76,14 +76,14 @@ router.put('/:id', (req, res) => {
           res.status(200)
           res.set({ 'Content-Type': 'application/json' })
           res.json({
-            result: result
+            result: result,
           })
         },
         error => {
           res.status(422)
           res.set({ 'Content-Type': 'application/json' })
           res.json({
-            error: error
+            error: error,
           })
         }
       )
@@ -92,7 +92,7 @@ router.put('/:id', (req, res) => {
       res.status(404)
       res.set({ 'Content-Type': 'application/json' })
       res.json({
-        error: "Task not found"
+        error: "Task not found",
       })
     }
   )
@@ -104,14 +104,16 @@ router.delete('/:id', (req, res) => {
     () => {
       deleteTask(id).then(() => {
         res.status(200)
-        res.send()
+        res.send({
+          result: true,
+        })
       })
     },
     () => {
       res.status(404)
       res.set({ 'Content-Type': 'application/json' })
       res.json({
-        error: "Task not found"
+        error: "Task not found",
       })
     }
   )

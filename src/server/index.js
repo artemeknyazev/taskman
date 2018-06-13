@@ -6,7 +6,7 @@ import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { Provider } from 'react-redux'
 
-import createAppStore from 'client/store'
+import configureStore from 'client/store'
 import { appInit } from 'client/reducers'
 import App from 'client/components/app'
 
@@ -23,19 +23,24 @@ app.use(express.static(path.resolve(__dirname, 'public')))
 app.use('/', routes)
 
 app.get('*', (req, res) => {
-  const title = "Taskman"
-  const store = createAppStore()
-  store.dispatch(appInit()).then(() => {
-    const initialState = JSON.stringify(store.getState())
-    const content = renderToString(
-      <Provider store={store}>
-        <App />
-      </Provider>,
-    )
-    res.send(indexHtml({ title, content, initialState }))
-  })
+  const store = configureStore()
+  const markup = (
+    <Provider store={store}>
+      <App />
+    </Provider>
+  )
+  store.dispatch(
+    appInit()
+  ).then(() =>
+    res.send(indexHtml({
+      title: "Taskman",
+      content: renderToString(markup),
+      initialState: store.getState(),
+    }))
+  )
 })
 
-app.listen(port, () => {
-  console.log(`Server is listening on port ${port}`)
+const server = app.listen(port, () => {
+  const { address, port } = server.address()
+  console.log(`Server is listening on ${address}:${port}`)
 })
