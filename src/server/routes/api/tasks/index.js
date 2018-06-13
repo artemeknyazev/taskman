@@ -71,7 +71,7 @@ router.put('/:id', (req, res) => {
   const id = parseInt(req.params.id)
   getTask(id).then(
     () => {
-      editTask(id, req.body).then(
+      editTask(id, req.body.data || {}).then(
         result => {
           res.status(200)
           res.set({ 'Content-Type': 'application/json' })

@@ -5,7 +5,7 @@ import {
   moveSelectionUp,
   moveSelectionDown,
   deleteSelectedItem,
-  startItemEdit,
+  startEditing,
 } from 'client/reducers'
 
 export default [
@@ -36,6 +36,6 @@ export default [
   }, {
     type: 'keyup',
     check: (key) => key === 'Enter',
-    callback: (dispatch) => dispatch(startItemEdit())
+    callback: (dispatch) => dispatch(startEditing())
   }
 ]

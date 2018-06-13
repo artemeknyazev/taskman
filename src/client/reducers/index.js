@@ -1,6 +1,7 @@
 import { clamp, arrayMove } from 'utils'
 import {
   getTasks,
+  editTask,
   deleteTask,
 } from 'client/api/tasks'
 
@@ -64,6 +65,7 @@ export const moveItemTo = (oldIndex, newIndex) => ({
   newIndex,
 })
 
+// TODO: optimistic update
 const DELETE_ITEM = 'DELETE_ITEM'
 const deleteItemAction = (id, error, result) => ({
   type: DELETE_ITEM,
@@ -88,21 +90,40 @@ export const deleteSelectedItem = () =>
     return dispatch(deleteItem(id))
   }
 
-const START_SELECTED_ITEM_EDIT = 'START_ITEM_EDIT'
-export const startItemEdit = () => ({
-  type: START_SELECTED_ITEM_EDIT,
+// TODO: handle edit fail!
+// TODO: optimistic update
+const START_EDITING = 'START_EDITING'
+export const startEditing = () => ({
+  type: START_EDITING,
 })
-
-const STOP_SELECTED_ITEM_EDIT = 'STOP_ITEM_EDIT'
-export const stopItemEdit = (text) => ({
-  type: STOP_SELECTED_ITEM_EDIT,
-  text,
+const STOP_EDITING = 'STOP_EDITING'
+export const stopEditing = () => ({
+  type: STOP_EDITING,
 })
-
-const CANCEL_SELECTED_ITEM_EDIT = 'CANCEL_ITEM_EDIT'
-export const cancelItemEdit = () => ({
-  type: CANCEL_SELECTED_ITEM_EDIT,
+const EDIT_ITEM = 'EDIT_ITEM'
+const editItemAction = (id, data, error, result) => ({
+  type: EDIT_ITEM,
+  id,
+  data,
+  error,
+  result,
 })
+export const editItem = (id, data = {}) =>
+  (dispatch) => {
+    dispatch(editItemAction(id, data))
+    return editTask(id, data).then(
+      ({ result }) => dispatch(editItemAction(id, data, null, result)),
+      ({ error }) => dispatch(editItemAction(id, data, error)),
+    )
+  }
+export const editSelectedItem = (data = {}) =>
+  (dispatch, getState) => {
+    const { list, selected } = getState()
+    if (selected === -1)
+      return Promise.resolve()
+    const { id } = list[selected]
+    return dispatch(editItem(id, data))
+  }
 
 const APP_INIT = 'INIT_APP'
 const appInitAction = (result) => ({
@@ -157,7 +178,6 @@ const reducer = (
       let selected = state.selected === -1 ? state.list.length-1 : state.selected-1
       return {
         ...state,
-        isEditing: false,
         selected: clamp(selected, 0, state.list.length-1),
       }
     }
@@ -166,7 +186,6 @@ const reducer = (
       let selected = state.selected === -1 ? 0 : state.selected+1
       return {
         ...state,
-        isEditing: false,
         selected: clamp(selected, 0, state.list.length-1),
       }
     }
@@ -175,7 +194,6 @@ const reducer = (
       const { selected } = action
       return {
         ...state,
-        isEditing: false,
         selected: clamp(selected, 0, state.list.length-1),
       }
     }
@@ -185,7 +203,6 @@ const reducer = (
       if (selected <= 0) return state
       return {
         ...state,
-        isEditing: false,
         selected: selected-1,
         list: arrayMove(list, selected, selected-1),
       }
@@ -196,7 +213,6 @@ const reducer = (
       if (selected === -1 || selected === list.length-1) return state
       return {
         ...state,
-        isEditing: false,
         selected: selected+1,
         list: arrayMove(list, selected, selected+1)
       }
@@ -206,10 +222,8 @@ const reducer = (
       const { oldIndex, newIndex } = action
       if (newIndex === oldIndex) return state
       const { selected, list } = state
-      console.log(newIndex)
       return {
         ...state,
-        isEditing: false,
         selected: newIndex,
         list: arrayMove(list, oldIndex, newIndex),
       }
@@ -234,32 +248,34 @@ const reducer = (
       }
     }
 
-    case START_SELECTED_ITEM_EDIT: {
-      const { selected, list } = state
+    case START_EDITING: {
       return {
         ...state,
         isEditing: true,
       }
     }
 
-    case STOP_SELECTED_ITEM_EDIT: {
-      const { text } = action
-      const { selected, list, editingText } = state
+    case STOP_EDITING: {
       return {
         ...state,
         isEditing: false,
-        list: list.map((item, index) => (
-          selected === index
-            ? { ...item, text }
-            : item
-        ))
       }
     }
 
-    case CANCEL_SELECTED_ITEM_EDIT: {
+    case EDIT_ITEM: {
+      let { list } = state
+      let isEditing = false
+      if (action.result) {
+        list = list.map(item =>
+          action.id === item.id
+            ? { ...action.result }
+            : item
+        )
+      }
       return {
         ...state,
-        isEditing: false,
+        list,
+        isEditing,
       }
     }
   }

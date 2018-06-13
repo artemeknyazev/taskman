@@ -20,6 +20,15 @@ let app = express()
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(express.static(path.resolve(__dirname, 'public')))
+app.use('*', (req, res, next) => {
+  if (IS_DEVELOPMENT && IS_SERVER) {
+    console.log('--> Request: ' + req.method + ' ' + req.originalUrl)
+    console.log('    Date:    ' + new Date().toString())
+    if ([ 'POST', 'PUT' ].includes(req.method))
+      console.log('    Body:    ' + JSON.stringify(req.body))
+  }
+  next()
+})
 app.use('/', routes)
 
 app.get('*', (req, res) => {
@@ -44,3 +53,7 @@ const server = app.listen(port, () => {
   const { address, port } = server.address()
   console.log(`Server is listening on ${address}:${port}`)
 })
+
+process.on('uncaughtException', function (err) {
+  console.log('Caught exception: ' + err);
+});

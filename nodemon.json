@@ -1,0 +1,8 @@
+{
+  "restartable": "rs",
+  "watch": [
+    "server.js",
+    "public/"
+  ],
+  "verbose": true
+}
