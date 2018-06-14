@@ -1,0 +1,12 @@
+.button {
+  border: 0 none !important;
+  background: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  outline: 0 none !important;
+
+  .button__text {
+    font-size: 1em;
+  }
+}

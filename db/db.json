@@ -6,37 +6,37 @@
         "id": 1,
         "text": "1 (2,3)",
         "completed": false,
-        "order": 1.0,
+        "order": 1,
         "status": "active",
         "createdAt": 1528448656243,
-        "updatedAt": 1528966182731
+        "updatedAt": 1528988561723
       },
       {
         "id": 2,
-        "text": "2 (3,4) 123",
+        "text": "2 (3,4)",
         "completed": false,
-        "order": 2.0,
+        "order": 2,
         "status": "active",
         "createdAt": 1528448656243,
-        "updatedAt": 1528966322350
+        "updatedAt": 1528989601835
       },
       {
         "id": 3,
-        "text": "3 (4,5) 5678",
+        "text": "3 (4,5)",
         "completed": true,
-        "order": 3.0,
+        "order": 3,
         "status": "active",
         "createdAt": 1528448656243,
-        "updatedAt": 1528966330227
+        "updatedAt": 1528987126052
       },
       {
         "id": 4,
-        "text": "45  6546",
+        "text": "4 (5,6)",
         "completed": true,
-        "order": 4.0,
+        "order": 4,
         "status": "active",
         "createdAt": 1528474143086,
-        "updatedAt": 1528967271990
+        "updatedAt": 1528988563179
       }
     ]
   }

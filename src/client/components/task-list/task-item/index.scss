@@ -10,14 +10,56 @@
     margin-right: 0.8em;
   }
   .task-item__text-container {
+    display: flex;
     flex: 1 1 auto;
+    flex-direction: column;
+    font-size: .8em;
+    justify-content: center;
 
+    .task-item__input,
     .task-item__text {
-      font-size: .8em;
+      display: inline-block;
+    }
+    .task-item__text {
+      cursor: text;
+    }
+  }
+  .task-item__controls-container {
+    display: flex;
+    flex: 0 0 5em;
+    visibility: hidden;
+
+    .task-item__edit-button,
+    .task-item__delete-button,
+    .task-item__apply-button,
+    .task-item__cancel-button {
+      display: flex;
+      flex: 1 0 auto;
+    }
+    .task-item__apply-button,
+    .task-item__cancel-button {
+      display: none;
     }
   }
 
   &.task-item--selected {
     background-color: #fdf9f9;
+  }
+  &:hover {
+    .task-item__controls-container {
+      visibility: visible;
+    }
+  }
+  &.task-item--editing {
+    .task-item__controls-container {
+      .task-item__apply-button,
+      .task-item__cancel-button {
+        display: flex;
+      }
+      .task-item__edit-button,
+      .task-item__delete-button {
+        display: none;
+      }
+    }
   }
 }

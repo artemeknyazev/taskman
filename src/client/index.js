@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 
 import { Provider } from 'react-redux'
 
+import { clearSelection } from 'client/reducers'
 import configureStore from 'client/store'
 import App from 'client/components/app'
 
@@ -18,3 +19,6 @@ window.onload = () => {
     document.getElementById('root')
   )
 }
+// TODO: think about a better way to deselect when clicking outside the list
+window.onclick = () =>
+  store.dispatch(clearSelection())

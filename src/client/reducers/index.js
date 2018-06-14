@@ -57,13 +57,18 @@ export const deleteSelectedItem = () =>
 
 // TODO: handle edit fail!
 // TODO: optimistic update
-const START_EDITING = 'START_EDITING'
-export const startEditing = () => ({
-  type: START_EDITING,
+const START_SELECTED_ITEM_EDITING = 'START_SELECTED_ITEM_EDITING'
+export const startSelectedItemEditing = () => ({
+  type: START_SELECTED_ITEM_EDITING
 })
-const STOP_EDITING = 'STOP_EDITING'
+const ITEM_START_EDITING = 'ITEM_START_EDITING'
+export const itemStartEditing = (id) => ({
+  type: ITEM_START_EDITING,
+  id,
+})
+const CANCEL_EDITING = 'STOP_EDITING'
 export const stopEditing = () => ({
-  type: STOP_EDITING,
+  type: CANCEL_EDITING,
 })
 const EDIT_ITEM = 'EDIT_ITEM'
 const editItemAction = (id, data, error, result) => ({
@@ -167,7 +172,7 @@ export default (
 ) => {
   switch (action.type) {
     case SET_SELECTION:
-      return { ...state, selected: action.selected }
+      return { ...state, selected: action.selected, isEditing: false }
 
     case FETCH_TASKS: {
       if (action.result) {
@@ -210,14 +215,19 @@ export default (
           orderedIds: newOrderedIds,
         }
       } else {
-        return state
+        return { ...state, isEditing: false }
       }
     }
 
-    case START_EDITING:
+    case START_SELECTED_ITEM_EDITING:
       return { ...state, isEditing: true }
 
-    case STOP_EDITING:
+    case ITEM_START_EDITING: {
+      const selected = state.orderedIds.findIndex(id => id === action.id)
+      return { ...state, selected, isEditing: true }
+    }
+
+    case CANCEL_EDITING:
       return { ...state, isEditing: false }
 
     case EDIT_ITEM: {

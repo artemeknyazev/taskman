@@ -6,7 +6,10 @@ import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 import {
   setSelection,
   moveItemTo,
+  itemStartEditing,
+  stopEditing,
   editItem,
+  deleteItem,
   getOrderedList,
 } from 'client/reducers'
 import TaskItem from './task-item'
@@ -27,16 +30,17 @@ class TaskList extends React.Component {
       isEditing: false,
     }
     this._inputRef = React.createRef()
-    this._onItemTextClick = this._onItemTextClick.bind(this)
     this._onItemTextChange = this._onItemTextChange.bind(this)
     this._onItemTextKeyUp = this._onItemTextKeyUp.bind(this)
+    this._onItemCancelChanges = this._onItemCancelChanges.bind(this)
+    this._onItemApplyChanges = this._onItemApplyChanges.bind(this)
     this._renderRow = this._renderRow.bind(this)
     this._onSortEnd = this._onSortEnd.bind(this)
   }
 
   static getDerivedStateFromProps(props, state) {
     const { list, selected } = props
-    let { isEditing, editingId, editingText } = state
+    let { editingId, editingText, isEditing } = state
     if (!state.isEditing && props.isEditing) {
       const { id, text } = list[selected]
       isEditing = true
@@ -47,11 +51,7 @@ class TaskList extends React.Component {
       editingId = -1
       editingText = ''
     }
-    return {
-      editingId,
-      editingText,
-      isEditing,
-    }
+    return { editingId, editingText, isEditing }
   }
 
   componentDidMount() {
@@ -68,36 +68,41 @@ class TaskList extends React.Component {
     this.setState({ editingText: ev.target.value })
   }
 
-  _onItemTextKeyUp(ev) {
-    if (ev.nativeEvent.key === 'Escape') {
-      this.setState({
-        editingId: -1,
-        editingText: '',
-        isEditing: false,
-      })
-    } else if (ev.nativeEvent.key === 'Enter') {
-      const { editingId, editingText } = this.state
-      this.setState({
-        editingId: -1,
-        editingText: '',
-        isEditing: false,
-      }, () => {
-        this.props.onItemEdit(editingId, { text: editingText })
-      })
-    }
+  _onItemCancelChanges() {
+    this.setState({
+      editingId: -1,
+      editingText: '',
+      isEditing: false,
+    }, () => {
+      this.props.onItemStopEditing()
+    })
   }
 
-  _onItemTextClick(id, text) {
+  _onItemApplyChanges() {
+    const { editingId, editingText } = this.state
     this.setState({
-      editingId: id,
-      editingText: text,
-      isEditing: true,
+      editingId: -1,
+      editingText: '',
+      isEditing: false,
+    }, () => {
+      this.props.onItemEditFinished(editingId, { text: editingText })
     })
+  }
+
+  _onItemTextKeyUp(ev) {
+    if (ev.nativeEvent.key === 'Escape') {
+      this._onItemCancelChanges()
+    } else if (ev.nativeEvent.key === 'Enter') {
+      this._onItemApplyChanges()
+    }
   }
 
   // TODO: check why selecting an item and then scrolling is laggy in Safari
   _renderRow({ index, key, style, isScrolling }) {
-    const { list, selected, onItemSelect } = this.props
+    const {
+      list, selected,
+      onItemSelect, onItemDelete, onItemStartEditing,
+    } = this.props
     const { editingId, editingText } = this.state
     const { id, text } = list[index]
     const isItemSelected = selected === index
@@ -109,12 +114,16 @@ class TaskList extends React.Component {
         text={text}
         isSelected={isItemSelected}
         isEditing={isItemEditing}
-        onItemClick={onItemSelect.bind(null, index)}
-        inputText={isItemEditing ? editingText : ''}
+        inputText={editingText}
         inputRef={this._inputRef}
-        onTextClick={isItemEditing ? null : this._onItemTextClick.bind(id, text)}
-        onTextChange={isItemEditing ? this._onItemTextChange : null}
-        onTextKeyUp={isItemEditing ? this._onItemTextKeyUp : null}
+        onTextClick={() => onItemStartEditing(id)}
+        onTextChange={this._onItemTextChange}
+        onTextKeyUp={this._onItemTextKeyUp}
+        onItemClick={() => onItemSelect(index)}
+        onItemStartEditing={() => onItemStartEditing(id)}
+        onItemCancelChanges={this._onItemCancelChanges}
+        onItemApplyChanges={this._onItemApplyChanges}
+        onItemDelete={() => onItemDelete(id)}
       />
     )
     return (
@@ -143,7 +152,7 @@ class TaskList extends React.Component {
       >
         {({ height, width }) => (
           <SortableTaskList
-            lockAxis={'y'}
+            lockAxis="y"
             distance={4}
             className="task-list"
             width={width}
@@ -153,6 +162,7 @@ class TaskList extends React.Component {
             overscanRowCount={10}
             rowRenderer={this._renderRow}
             onSortEnd={this._onSortEnd}
+            useDragHandle={true}
             /* note: rerenders when one of the props below has changed */
             scrollToIndex={selected}
             list={list}
@@ -184,12 +194,12 @@ const mapStateToProps = (state) => {
 }
 
 const mapDispatchToProps = (dispatch) => ({
-  onItemSelect: (index) =>
-    dispatch(setSelection(index)),
-  onItemMoveTo: (oldIndex, newIndex) =>
-    dispatch(moveItemTo(oldIndex, newIndex)),
-  onItemEdit: (id, data) =>
-    dispatch(editItem(id, data)),
+  onItemSelect: (index) => dispatch(setSelection(index)),
+  onItemMoveTo: (oldIndex, newIndex) => dispatch(moveItemTo(oldIndex, newIndex)),
+  onItemStartEditing: (id) => dispatch(itemStartEditing(id)),
+  onItemStopEditing: () => dispatch(stopEditing()),
+  onItemEditFinished: (id, data) => dispatch(editItem(id, data)),
+  onItemDelete: (id) => dispatch(deleteItem(id)),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(TaskList)
