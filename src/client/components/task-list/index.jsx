@@ -7,6 +7,7 @@ import {
   setSelection,
   moveItemTo,
   editItem,
+  getOrderedList,
 } from 'client/reducers'
 import TaskItem from './task-item'
 
@@ -18,7 +19,8 @@ const SortableTaskList = SortableContainer(List)
 class TaskList extends React.Component {
   constructor(props) {
     super(props)
-    // keep item text in list because component could be unmounted and remounted while scrolling when editing
+    // keep item text in list because component could be unmounted
+    // and remounted while scrolling when editing
     this.state = {
       editingId: -1,
       editingText: '',
@@ -174,7 +176,7 @@ TaskList.propTypes = {
 
 const mapStateToProps = (state) => {
   return {
-    list: state.list,
+    list: getOrderedList(state),
     selected: state.selected,
     isEditing: state.isEditing,
     isFetching: state.isFetching,

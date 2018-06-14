@@ -1,9 +1,11 @@
-import { clamp, arrayMove } from 'utils'
+import { clamp, sortItemsByField } from 'utils'
 import {
   getTasks,
   editTask,
   deleteTask,
 } from 'client/api/tasks'
+
+/* ----------------------------------- ACTIONS ----------------------------------- */
 
 const FETCH_TASKS = 'FETCH_TASKS'
 const fetchTasksAction = (
@@ -27,44 +29,7 @@ export const fetchTasks = (
     )
   }
 
-const CLEAR_SELECTION = 'CLEAR_SELECTION'
-export const clearSelection = () => ({
-  type: CLEAR_SELECTION
-})
-
-const MOVE_SELECTION_UP = 'MOVE_SELECTION_UP'
-export const moveSelectionUp = () => ({
-  type: MOVE_SELECTION_UP
-})
-
-const MOVE_SELECTION_DOWN = 'MOVE_SELECTION_DOWN'
-export const moveSelectionDown = () => ({
-  type: MOVE_SELECTION_DOWN
-})
-
-const SET_SELECTION = 'SET_SELECTION'
-export const setSelection = (selected) => ({
-  type: SET_SELECTION,
-  selected
-})
-
-const MOVE_ITEM_UP = 'MOVE_ITEM_UP'
-export const moveItemUp = () => ({
-  type: MOVE_ITEM_UP
-})
-
-const MOVE_ITEM_DOWN = 'MOVE_ITEM_DOWN'
-export const moveItemDown = () => ({
-  type: MOVE_ITEM_DOWN
-})
-
-const MOVE_ITEM_TO = 'MOVE_ITEM_TO'
-export const moveItemTo = (oldIndex, newIndex) => ({
-  type: MOVE_ITEM_TO,
-  oldIndex,
-  newIndex,
-})
-
+// TODO: handle delete fail
 // TODO: optimistic update
 const DELETE_ITEM = 'DELETE_ITEM'
 const deleteItemAction = (id, error, result) => ({
@@ -83,10 +48,10 @@ export const deleteItem = (id) =>
   }
 export const deleteSelectedItem = () =>
   (dispatch, getState) => {
-    const { list, selected } = getState()
+    const { selected, orderedIds } = getState()
     if (selected === -1)
       return Promise.resolve()
-    const { id } = list[selected]
+    const id = orderedIds[selected]
     return dispatch(deleteItem(id))
   }
 
@@ -116,14 +81,6 @@ export const editItem = (id, data = {}) =>
       ({ error }) => dispatch(editItemAction(id, data, error)),
     )
   }
-export const editSelectedItem = (data = {}) =>
-  (dispatch, getState) => {
-    const { list, selected } = getState()
-    if (selected === -1)
-      return Promise.resolve()
-    const { id } = list[selected]
-    return dispatch(editItem(id, data))
-  }
 
 const APP_INIT = 'INIT_APP'
 const appInitAction = (result) => ({
@@ -137,145 +94,147 @@ export const appInit = () =>
       .then(dispatch(appInitAction(true)))
   }
 
-const reducer = (
+const SET_SELECTION = 'SET_SELECTION'
+export const setSelection = (selected) => ({
+  type: SET_SELECTION,
+  selected
+})
+export const clearSelection = () =>
+  setSelection(-1)
+export const moveSelectionUp = () =>
+  (dispatch, getState) => {
+    const { selected, orderedIds } = getState()
+    if (selected === -1)
+      return dispatch(setSelection(orderedIds.length - 1))
+    if (selected > 0)
+      return dispatch(setSelection(selected - 1))
+    return Promise.resolve()
+  }
+export const moveSelectionDown = () =>
+  (dispatch, getState) => {
+    const { selected, orderedIds } = getState()
+    if (selected === -1)
+      return dispatch(setSelection(0))
+    if (selected < orderedIds.length - 1)
+      return dispatch(setSelection(selected + 1))
+    return Promise.resolve()
+  }
+
+export const moveItemTo = (oldIndex, newIndex) =>
+  (dispatch, getState) => {
+    const { orderedIds, byId } = getState()
+    let id = orderedIds[oldIndex]
+    let [ beforeIndex, afterIndex ] = newIndex < oldIndex
+      ? [ newIndex - 1, newIndex ] : [ newIndex, newIndex + 1 ]
+    let order
+    if (beforeIndex < 0 && afterIndex >= 0)
+      order = byId[orderedIds[afterIndex]].order - 1.0
+    else if (beforeIndex < orderedIds.length && afterIndex >= orderedIds.length)
+      order = byId[orderedIds[beforeIndex]].order + 1.0
+    else
+      order = byId[orderedIds[beforeIndex]].order + (byId[orderedIds[afterIndex]].order -
+        byId[orderedIds[beforeIndex]].order) / 2
+    return dispatch(editItem(id, { order }))
+      .then(dispatch(setSelection(newIndex)))
+  }
+export const moveItemUp = () =>
+  (dispatch, getState) => {
+    const { orderedIds, selected } = getState()
+    if (selected <= 0 || selected >= orderedIds.length)
+      return Promise.resolve()
+    return dispatch(moveItemTo(selected, selected - 1))
+  }
+export const moveItemDown = () =>
+  (dispatch, getState) => {
+    const { orderedIds, selected } = getState()
+    if (selected < 0 || selected >= orderedIds.length - 1)
+      return Promise.resolve()
+    return dispatch(moveItemTo(selected, selected + 1))
+  }
+
+/* ----------------------------------- REDUCER ----------------------------------- */
+
+export default (
   state = {
     isEditing: false,
     isFetching: false,
-    list: [],
+    byId: {},
+    allIds: [],
+    orderedIds: [],
     selected: -1,
   },
   action
 ) => {
   switch (action.type) {
+    case SET_SELECTION:
+      return { ...state, selected: action.selected }
+
     case FETCH_TASKS: {
       if (action.result) {
+        let byId = {}
+        let allIds = []
+        action.result.collection.forEach(item => {
+          byId[item.id] = item
+          allIds.push(item.id)
+        })
+        let orderedIds = sortItemsByField(allIds, byId, 'order')
         return {
           ...state,
           isFetching: false,
-          list: action.result.collection,
+          byId,
+          allIds,
+          orderedIds,
         }
-      } else if (action.error) {
-        return {
-          ...state,
-          isFetching: false,
-        }
-      } else {
-        return {
-          ...state,
-          isFetching: true,
-        }
-      }
-    }
-
-    case CLEAR_SELECTION: {
-      return {
-        ...state,
-        selected: -1
-      }
-    }
-
-    case MOVE_SELECTION_UP: {
-      let selected = state.selected === -1 ? state.list.length-1 : state.selected-1
-      return {
-        ...state,
-        selected: clamp(selected, 0, state.list.length-1),
-      }
-    }
-
-    case MOVE_SELECTION_DOWN: {
-      let selected = state.selected === -1 ? 0 : state.selected+1
-      return {
-        ...state,
-        selected: clamp(selected, 0, state.list.length-1),
-      }
-    }
-
-    case SET_SELECTION: {
-      const { selected } = action
-      return {
-        ...state,
-        selected: clamp(selected, 0, state.list.length-1),
-      }
-    }
-
-    case MOVE_ITEM_UP: {
-      let { selected, list } = state
-      if (selected <= 0) return state
-      return {
-        ...state,
-        selected: selected-1,
-        list: arrayMove(list, selected, selected-1),
-      }
-    }
-
-    case MOVE_ITEM_DOWN: {
-      let { selected, list } = state
-      if (selected === -1 || selected === list.length-1) return state
-      return {
-        ...state,
-        selected: selected+1,
-        list: arrayMove(list, selected, selected+1)
-      }
-    }
-
-    case MOVE_ITEM_TO: {
-      const { oldIndex, newIndex } = action
-      if (newIndex === oldIndex) return state
-      const { selected, list } = state
-      return {
-        ...state,
-        selected: newIndex,
-        list: arrayMove(list, oldIndex, newIndex),
-      }
+      } else if (action.error)
+        return { ...state, isFetching: false }
+      else
+        return { ...state, isFetching: true }
     }
 
     case DELETE_ITEM: {
       if (action.result) {
-        const { selected, list } = state
-        const index = list.findIndex(({ id }) => action.id === id)
-        const newList = list.slice()
-        newList.splice(index, 1)
-        let newSelected = selected !== -1 && newList.length
-          ? clamp(selected, 0, newList.length - 1)
-          : -1
+        const { selected, orderedIds, allIds, byId } = state
+        const newOrderedIds = orderedIds.slice()
+        newOrderedIds.splice(newOrderedIds.findIndex(id => id === action.id), 1)
+        const newAllIds = allIds.slice()
+        newAllIds.splice(newAllIds.findIndex(id => id === action.id), 1)
+        let newSelected = selected !== -1 && newOrderedIds.length
+          ? clamp(selected, 0, newOrderedIds.length - 1) : -1
+        let newById = newAllIds.reduce((newById, id) =>
+          (newById[id] = byId[id], newById), {})
         return {
           ...state,
           selected: newSelected,
-          list: newList,
+          byId: newById,
+          allIds: newAllIds,
+          orderedIds: newOrderedIds,
         }
       } else {
         return state
       }
     }
 
-    case START_EDITING: {
-      return {
-        ...state,
-        isEditing: true,
-      }
-    }
+    case START_EDITING:
+      return { ...state, isEditing: true }
 
-    case STOP_EDITING: {
-      return {
-        ...state,
-        isEditing: false,
-      }
-    }
+    case STOP_EDITING:
+      return { ...state, isEditing: false }
 
     case EDIT_ITEM: {
-      let { list } = state
-      let isEditing = false
       if (action.result) {
-        list = list.map(item =>
-          action.id === item.id
-            ? { ...action.result }
-            : item
-        )
-      }
-      return {
-        ...state,
-        list,
-        isEditing,
+        const { allIds, orderedIds } = state
+        const { result: item, data } = action
+        const byId = { ...state.byId, [item.id]: item }
+        // reorder only when order has changed
+        const newOrderedIds = data.hasOwnProperty('order')
+          ? sortItemsByField(allIds, byId, 'order') : orderedIds
+        return {
+          ...state,
+          byId,
+          orderedIds: newOrderedIds,
+        }
+      } else {
+        return { ...state, isEditing: false }
       }
     }
   }
@@ -283,4 +242,7 @@ const reducer = (
   return state
 }
 
-export default reducer
+/* ---------------------------------- SELECTORS ---------------------------------- */
+
+export const getOrderedList = (state) =>
+  state.orderedIds.map(id => state.byId[id])

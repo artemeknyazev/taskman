@@ -3,17 +3,21 @@ import { sanitize } from 'sanitizer'
 import { parseBoolean } from 'utils'
 import db from './db.js'
 
-const constraints = {
-  text: {
-    presence: true,
-    length: {
-      minimum: 3,
-      message: 'must be at least 3 characters',
-    }
-  },
-  completed: {
-    inclusion: [ "true", "false", "1", "0", 1, 0, true, false ],
-  }
+const textConstraint = {
+  format: { pattern: "^\s*[^\s]+", message: 'message can\'t be empty' }
+}
+const completedConstraint = {
+  inclusion: [ "true", "false", "1", "0", 1, 0, true, false ]
+}
+
+const addConstraint = {
+  text: { ...textConstraint, presence: true },
+  completedConstraint: { ...completedConstraint, presence: true },
+  order: { presence: true },
+}
+const editConstraint = {
+  text: { ...textConstraint },
+  completedConstraint: { ...completedConstraint },
 }
 
 export const prepareFilter = ({
@@ -24,9 +28,9 @@ export const prepareFilter = ({
   if (q !== undefined) {
     const match = q.match(/^#(\d+)$/)
     if (match)
-      filter.id = parseInt(match[1])
+      filter.id = parseInt(match[1].trim())
     else
-      filter.text = sanitize(q)
+      filter.text = sanitize(q.trim())
   }
   if (completed !== undefined)
     filter.completed = parseBoolean(completed)
@@ -53,9 +57,9 @@ const prepareForAdd = (
 ) => {
   const now = new Date().getTime()
   let result = {
-    ...data,
-    text: sanitize(data.text),
+    text: sanitize(data.text.trim()),
     completed: parseBoolean(data.completed),
+    order: parseFloat(data.order),
     status: 'active',
     createdAt: now,
     updatedAt: now,
@@ -67,12 +71,13 @@ const prepareForEdit = (
   data
 ) => {
   const now = new Date().getTime()
-  let result = {
-    ...data,
-    text: sanitize(data.text),
-    completed: parseBoolean(data.completed),
-    updatedAt: now
-  }
+  let result = { updatedAt: now }
+  if (data.hasOwnProperty('text'))
+    result.text = sanitize(data.text.trim())
+  if (data.hasOwnProperty('completed'))
+    result.completed = parseBoolean(data.completed)
+  if (data.hasOwnProperty('order'))
+    result.order = parseFloat(data.order)
   return result
 }
 
@@ -114,7 +119,7 @@ export const getTask = (
 export const addTask = (
   data
 ) => new Promise((resolve, reject) => {
-  validate.async(data, constraints).then(
+  validate.async(data, addConstraint).then(
     data => {
       const id = db.get('tasks.maxId').value() + 1
       db.set('tasks.maxId', id).write()
@@ -133,7 +138,7 @@ export const editTask = (
   id,
   data
 ) => new Promise((resolve, reject) => {
-  validate.async(data, constraints).then(
+  validate.async(data, editConstraint).then(
     () => {
       data = prepareForEdit(data)
       const collection = db.get('tasks.collection')
