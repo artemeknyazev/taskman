@@ -13,10 +13,20 @@ const TaskItemHandle = SortableHandle(() => (
 ))
 
 const TaskItem = ({
-  id, text, inputText, inputRef, isSelected, isEditing,
-  onItemClick, onTextClick, onTextChange, onTextKeyUp,
-  onItemStartEditing, onItemApplyChanges, onItemCancelChanges,
-  onItemDelete,
+  id = null,
+  text,
+  inputText,
+  inputRef = null,
+  isSelected = false,
+  isEditing = false,
+  onItemClick = null,
+  onTextChange = null,
+  onTextKeyUp = null,
+  onItemStartEditing = null,
+  onItemApplyChanges = null,
+  onItemCancelChanges = null,
+  onItemAddAfter = null,
+  onItemDelete = null,
 }) => (
   <div
     className={cx({
@@ -41,13 +51,18 @@ const TaskItem = ({
       ) : (
         <span
           className="task-item__text"
-          onClick={(ev) => onTextClick && onTextClick(ev) && ev.stopPropagation()}
         >
           {text}
         </span>  
       )}
     </div>
     <div className="task-item__controls-container">
+      <Button
+        className="task-item__edit-button"
+          onClick={(ev) => onItemAddAfter && onItemAddAfter(ev) && ev.stopPropagation()}
+      >
+        +
+      </Button>
       <Button
         className="task-item__edit-button"
         onClick={(ev) => onItemStartEditing && onItemStartEditing(ev) && ev.stopPropagation()}
@@ -77,7 +92,7 @@ const TaskItem = ({
 )
 
 TaskItem.propTypes = {
-  id: PropTypes.number.isRequired,
+  id: PropTypes.number,
   text: PropTypes.string.isRequired,
   inputText: PropTypes.string.isRequired,
   inputRef: PropTypes.object.isRequired,
@@ -87,6 +102,7 @@ TaskItem.propTypes = {
   onTextClick: PropTypes.func,
   onTextChange: PropTypes.func,
   onTextKeyUp: PropTypes.func,
+  onItemAddAfter: PropTypes.func,
   onItemStartEditing: PropTypes.func,
   onItemApplyChanges: PropTypes.func,
   onItemCancelChanges: PropTypes.func,

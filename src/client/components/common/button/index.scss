@@ -1,12 +1,22 @@
 .button {
+  align-content: center;
   border: 0 none !important;
   background: none;
-  padding: 0;
-  margin: 0;
   cursor: pointer;
+  flex-direction: row;
+  justify-content: center;
+  margin: 0;
   outline: 0 none !important;
+  padding: 0;
+  text-align: center;
 
   .button__text {
-    font-size: 1em;
+    color: #666;
+  }
+
+  &:hover {
+    .button__text {
+      color: #aaa;
+    }
   }
 }

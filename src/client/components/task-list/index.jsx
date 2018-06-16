@@ -10,6 +10,7 @@ import {
   stopEditing,
   editItem,
   deleteItem,
+  addItemAtIndex,
   getOrderedList,
 } from 'client/reducers'
 import TaskItem from './task-item'
@@ -25,7 +26,6 @@ class TaskList extends React.Component {
     // keep item text in list because component could be unmounted
     // and remounted while scrolling when editing
     this.state = {
-      editingId: -1,
       editingText: '',
       isEditing: false,
     }
@@ -40,18 +40,16 @@ class TaskList extends React.Component {
 
   static getDerivedStateFromProps(props, state) {
     const { list, selected } = props
-    let { editingId, editingText, isEditing } = state
+    let { editingText, isEditing } = state
     if (!state.isEditing && props.isEditing) {
       const { id, text } = list[selected]
       isEditing = true
-      editingId = id
       editingText = text
     } else if (state.isEditing && !props.isEditing) {
       isEditing = false
-      editingId = -1
       editingText = ''
     }
-    return { editingId, editingText, isEditing }
+    return { editingText, isEditing }
   }
 
   componentDidMount() {
@@ -69,24 +67,14 @@ class TaskList extends React.Component {
   }
 
   _onItemCancelChanges() {
-    this.setState({
-      editingId: -1,
-      editingText: '',
-      isEditing: false,
-    }, () => {
-      this.props.onItemStopEditing()
-    })
+    this.props.onItemStopEditing()
   }
 
   _onItemApplyChanges() {
-    const { editingId, editingText } = this.state
-    this.setState({
-      editingId: -1,
-      editingText: '',
-      isEditing: false,
-    }, () => {
-      this.props.onItemEditFinished(editingId, { text: editingText })
-    })
+    const { editingText } = this.state
+    const { list, selected } = this.props
+    const id = list[selected].id
+    this.props.onItemEditFinished(id, { text: editingText })
   }
 
   _onItemTextKeyUp(ev) {
@@ -101,12 +89,12 @@ class TaskList extends React.Component {
   _renderRow({ index, key, style, isScrolling }) {
     const {
       list, selected,
-      onItemSelect, onItemDelete, onItemStartEditing,
+      onItemSelect, onItemDelete, onItemStartEditing, onItemAddAfter,
     } = this.props
-    const { editingId, editingText } = this.state
+    const { isEditing, editingText } = this.state
     const { id, text } = list[index]
     const isItemSelected = selected === index
-    const isItemEditing = id === editingId
+    const isItemEditing = isItemSelected && isEditing
     const elem = (
       <SortableTaskItem
         index={index}
@@ -116,9 +104,9 @@ class TaskList extends React.Component {
         isEditing={isItemEditing}
         inputText={editingText}
         inputRef={this._inputRef}
-        onTextClick={() => onItemStartEditing(id)}
         onTextChange={this._onItemTextChange}
         onTextKeyUp={this._onItemTextKeyUp}
+        onItemAddAfter={() => onItemAddAfter(index)}
         onItemClick={() => onItemSelect(index)}
         onItemStartEditing={() => onItemStartEditing(id)}
         onItemCancelChanges={this._onItemCancelChanges}
@@ -194,6 +182,7 @@ const mapStateToProps = (state) => {
 }
 
 const mapDispatchToProps = (dispatch) => ({
+  onItemAddAfter: (index) => dispatch(addItemAtIndex(index + 1)),
   onItemSelect: (index) => dispatch(setSelection(index)),
   onItemMoveTo: (oldIndex, newIndex) => dispatch(moveItemTo(oldIndex, newIndex)),
   onItemStartEditing: (id) => dispatch(itemStartEditing(id)),

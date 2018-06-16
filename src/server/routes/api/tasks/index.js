@@ -29,7 +29,7 @@ router.get('/', (req, res) => {
 })
 
 router.post('/', (req, res) => {
-  addTask(req.body).then(
+  addTask(req.body.data || {}).then(
     result => {
       res.status(200)
       res.set({ 'Content-Type': 'application/json' })

@@ -15,13 +15,14 @@
     flex-direction: column;
     font-size: .8em;
     justify-content: center;
+    min-width: 0;
 
     .task-item__input,
     .task-item__text {
       display: inline-block;
-    }
-    .task-item__text {
-      cursor: text;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
   .task-item__controls-container {

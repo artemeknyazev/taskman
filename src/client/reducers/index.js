@@ -1,9 +1,20 @@
 import { clamp, sortItemsByField } from 'utils'
 import {
   getTasks,
+  addTask,
   editTask,
   deleteTask,
 } from 'client/api/tasks'
+
+const getOrderBetweenIndices = (beforeIndex, afterIndex, byId, orderedIds) => {
+  if (beforeIndex < 0 && afterIndex >= 0)
+    return byId[orderedIds[afterIndex]].order - 1.0
+  else if (beforeIndex < orderedIds.length && afterIndex >= orderedIds.length)
+    return byId[orderedIds[beforeIndex]].order + 1.0
+  else
+    return byId[orderedIds[beforeIndex]].order + (byId[orderedIds[afterIndex]].order -
+      byId[orderedIds[beforeIndex]].order) / 2
+}
 
 /* ----------------------------------- ACTIONS ----------------------------------- */
 
@@ -27,6 +38,38 @@ export const fetchTasks = (
       ({ result }) => dispatch(fetchTasksAction(null, result)),
       ({ error }) => dispatch(fetchTasksAction(error))
     )
+  }
+
+const ADD_ITEM = 'ADD_ITEM_AT_INDEX'
+export const addItemAction = (data, error, result) => ({
+  type: ADD_ITEM,
+  data,
+  error,
+  result,
+})
+export const addItemAtIndex = (index) =>
+  (dispatch, getState) => {
+    const { byId, orderedIds } = getState()
+    const data = {
+      text: 'New task',
+      completed: false,
+      order: getOrderBetweenIndices(index - 1, index, byId, orderedIds),
+    }
+    dispatch(addItemAction(data))
+    return addTask(data).then(
+      ({ result }) => dispatch(addItemAction(data, null, result)),
+      ({ error }) => dispatch(addItemAction(data, error)),
+    )
+  }
+export const addAfterSelectedItem = () =>
+  (dispatch, getState) => {
+    const { selected } = getState()
+    return dispatch(addItemAtIndex(selected + 1))
+  }
+export const addBeforeSelectedItem = () =>
+  (dispatch, getState) => {
+    const { selected } = getState()
+    return dispatch(addItemAtIndex(selected === -1 ? 0 : selected))
   }
 
 // TODO: handle delete fail
@@ -128,17 +171,10 @@ export const moveSelectionDown = () =>
 export const moveItemTo = (oldIndex, newIndex) =>
   (dispatch, getState) => {
     const { orderedIds, byId } = getState()
-    let id = orderedIds[oldIndex]
-    let [ beforeIndex, afterIndex ] = newIndex < oldIndex
+    const id = orderedIds[oldIndex]
+    const [ beforeIndex, afterIndex ] = newIndex < oldIndex
       ? [ newIndex - 1, newIndex ] : [ newIndex, newIndex + 1 ]
-    let order
-    if (beforeIndex < 0 && afterIndex >= 0)
-      order = byId[orderedIds[afterIndex]].order - 1.0
-    else if (beforeIndex < orderedIds.length && afterIndex >= orderedIds.length)
-      order = byId[orderedIds[beforeIndex]].order + 1.0
-    else
-      order = byId[orderedIds[beforeIndex]].order + (byId[orderedIds[afterIndex]].order -
-        byId[orderedIds[beforeIndex]].order) / 2
+    const order = getOrderBetweenIndices(beforeIndex, afterIndex, byId, orderedIds)
     return dispatch(editItem(id, { order }))
       .then(dispatch(setSelection(newIndex)))
   }
@@ -242,6 +278,34 @@ export default (
           ...state,
           byId,
           orderedIds: newOrderedIds,
+        }
+      } else {
+        return { ...state, isEditing: false }
+      }
+    }
+
+    case ADD_ITEM: {
+      if (action.result) {
+        const item = action.result
+        const { selected, byId, allIds, orderedIds } = state
+        const index = orderedIds.findIndex(id => item.order < byId[id].order)
+        const newOrderedIds = index === -1 ? [
+          ...orderedIds,
+          item.id,
+        ] : [
+          ...orderedIds.slice(0, index),
+          item.id,
+          ...orderedIds.slice(index),
+        ]
+        const newById = { ...byId, [item.id]: item }
+        const newAllIds = [ ...allIds, item.id ]
+        return {
+          ...state,
+          byId: newById,
+          orderedIds: newOrderedIds,
+          allIds: newAllIds,
+          selected: index === -1 ? newOrderedIds.length - 1 : index,
+          isEditing: true,
         }
       } else {
         return { ...state, isEditing: false }

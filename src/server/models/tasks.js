@@ -4,7 +4,7 @@ import { parseBoolean } from 'utils'
 import db from './db.js'
 
 const textConstraint = {
-  format: { pattern: "^\s*[^\s]+", message: 'message can\'t be empty' }
+  length: { minimum: 1, message: 'message can\'t be empty' }
 }
 const completedConstraint = {
   inclusion: [ "true", "false", "1", "0", 1, 0, true, false ]
@@ -12,12 +12,12 @@ const completedConstraint = {
 
 const addConstraint = {
   text: { ...textConstraint, presence: true },
-  completedConstraint: { ...completedConstraint, presence: true },
+  completed: { ...completedConstraint, presence: true },
   order: { presence: true },
 }
 const editConstraint = {
   text: { ...textConstraint },
-  completedConstraint: { ...completedConstraint },
+  completed: { ...completedConstraint },
 }
 
 export const prepareFilter = ({
@@ -51,6 +51,15 @@ export const prepareFilterPred = ({
     result = result && item.completed === completed
   return result
 }
+
+const prepareBeforeValidate = (data) =>
+  Object.keys(data).reduce((acc, key) => {
+    if (typeof data[key] === 'string')
+      acc[key] = data[key].trim()
+    else
+      acc[key] = data[key]
+    return acc
+  }, {})
 
 const prepareForAdd = (
   data
@@ -119,7 +128,10 @@ export const getTask = (
 export const addTask = (
   data
 ) => new Promise((resolve, reject) => {
-  validate.async(data, addConstraint).then(
+  validate.async(
+    prepareBeforeValidate(data),
+    addConstraint
+  ).then(
     data => {
       const id = db.get('tasks.maxId').value() + 1
       db.set('tasks.maxId', id).write()
@@ -128,7 +140,7 @@ export const addTask = (
       const collection = db.get('tasks.collection')
         .push(data)
         .write()
-      resolve(collection.slice(-1))
+      resolve(collection.slice(-1)[0])
     },
     reject
   )
@@ -138,7 +150,10 @@ export const editTask = (
   id,
   data
 ) => new Promise((resolve, reject) => {
-  validate.async(data, editConstraint).then(
+  validate.async(
+    prepareBeforeValidate(data),
+    editConstraint
+  ).then(
     () => {
       data = prepareForEdit(data)
       const collection = db.get('tasks.collection')
