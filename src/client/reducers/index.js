@@ -49,7 +49,7 @@ export const fetchTasks = (
     )
   }
 
-const ADD_ITEM = 'ADD_ITEM_AT_INDEX'
+const ADD_ITEM = 'ADD_ITEM'
 export const addItemAction = (data, error, result) => ({
   type: ADD_ITEM,
   data,
@@ -202,10 +202,10 @@ export const moveItemDown = () =>
     return dispatch(moveItemTo(selected, selected + 1))
   }
 
-const CHANGE_FILTER = 'CHANGE_FILTER'
-export const changeFilter = (query) => {
+const SET_FILTER = 'SET_FILTER'
+export const setFilter = (query) => {
   return {
-    type: CHANGE_FILTER,
+    type: SET_FILTER,
     query,
   }
 }
@@ -231,7 +231,7 @@ export default (
     case SET_SELECTION:
       return { ...state, selected: action.selected, isEditing: false }
 
-    case CHANGE_FILTER: {
+    case SET_FILTER: {
       const { byId, filter, orderedIds } = state
       const { query } = action
       return {

@@ -7,7 +7,7 @@
     "moduleResolution": "node",
     "paths": {
       "client/*": [ "client/*" ],
-      "sesrver/*": [ "server/*" ],
+      "server/*": [ "server/*" ],
       "utils/*": [ "utils/*" ],
       "utils": [ "utils" ]
     },

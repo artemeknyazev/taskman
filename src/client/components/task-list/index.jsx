@@ -12,7 +12,7 @@ import {
   editItem,
   deleteItem,
   addItemAtIndex,
-  changeFilter,
+  setFilter,
   getFilteredOrderedList,
 } from 'client/reducers'
 import TaskItem from './task-item'
@@ -153,7 +153,7 @@ class TaskList extends React.Component {
   }
 
   _onFilterApply() {
-    this.props.onFilterChange(this.state.query)
+    this.props.onFilterApply(this.state.query)
   }
 
   render() {
@@ -207,17 +207,15 @@ TaskList.propTypes = {
   isFetching: PropTypes.bool.isRequired,
 }
 
-const mapStateToProps = (state) => {
-  return {
-    list: getFilteredOrderedList(state),
-    selected: state.selected,
-    isEditing: state.isEditing,
-    isFetching: state.isFetching,
-  }
-}
+const mapStateToProps = (state) => ({
+  list: getFilteredOrderedList(state),
+  selected: state.selected,
+  isEditing: state.isEditing,
+  isFetching: state.isFetching,
+})
 
 const mapDispatchToProps = (dispatch) => ({
-  onFilterChange: (query) => dispatch(changeFilter(query)),
+  onFilterApply: (query) => dispatch(setFilter(query)),
   onItemAddAfter: (index) => dispatch(addItemAtIndex(index + 1)),
   onItemSelect: (index) => dispatch(setSelection(index)),
   onItemMoveTo: (oldIndex, newIndex) => dispatch(moveItemTo(oldIndex, newIndex)),
