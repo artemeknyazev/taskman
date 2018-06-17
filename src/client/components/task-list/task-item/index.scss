@@ -3,11 +3,32 @@
   box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 1px 1px;
   display: flex;
   flex-flow: row nowrap;
-  padding: 0.55em 0.8em;
+  padding: 0 0.6em;
 
   .task-item__handle {
     flex: 0 0 auto;
-    margin-right: 0.8em;
+    margin-right: 0.6em;
+    padding: 0.6em 0;
+    visibility: hidden;
+  }
+  .task-item__id-container {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    font-size: 0.8em;
+    justify-content: center;
+    margin-right: 0.3em;
+    min-width: 0;
+    padding-top: .2em;
+
+    .task-item__id {
+      &:before {
+        content: '#'
+      }
+      &:after {
+        content: ': '
+      }
+    }
   }
   .task-item__text-container {
     display: flex;
@@ -16,6 +37,7 @@
     font-size: .8em;
     justify-content: center;
     min-width: 0;
+    padding-top: .2em;
 
     .task-item__input,
     .task-item__text {
@@ -27,15 +49,25 @@
   }
   .task-item__controls-container {
     display: flex;
-    flex: 0 0 5em;
+    flex: 0 0 auto;
+    min-width: 0;
+    padding-top: .355em;
     visibility: hidden;
 
+    .task-item__control-button {
+      border-radius: 1.225em;
+      display: inline-block;
+      margin-left: 0.5em;
+      height: 2.5em;
+      width: 2.5em;
+    }
+
+    .task-item__add-after-button,
     .task-item__edit-button,
     .task-item__delete-button,
     .task-item__apply-button,
     .task-item__cancel-button {
-      display: flex;
-      flex: 1 0 auto;
+      display: inline-block;
     }
     .task-item__apply-button,
     .task-item__cancel-button {
@@ -47,16 +79,23 @@
     background-color: #fdf9f9;
   }
   &:hover {
+    .task-item__handle {
+      visibility: visible;
+    }
     .task-item__controls-container {
       visibility: visible;
     }
   }
   &.task-item--editing {
+    .task-item__handle {
+      visibility: hidden;
+    }
     .task-item__controls-container {
       .task-item__apply-button,
       .task-item__cancel-button {
         display: flex;
       }
+      .task-item__add-after-button,
       .task-item__edit-button,
       .task-item__delete-button {
         display: none;
