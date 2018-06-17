@@ -16,6 +16,15 @@ const getOrderBetweenIndices = (beforeIndex, afterIndex, byId, orderedIds) => {
       byId[orderedIds[beforeIndex]].order) / 2
 }
 
+const prepareFilteredOrderedIds = (query, orderedIds, byId) =>
+  query && query.length > 2 ? (
+    orderedIds.filter(id => (
+      byId[id].text.toLowerCase().includes(query.toLowerCase())
+    ))
+  ) : (
+    orderedIds
+  )
+
 /* ----------------------------------- ACTIONS ----------------------------------- */
 
 const FETCH_TASKS = 'FETCH_TASKS'
@@ -193,15 +202,27 @@ export const moveItemDown = () =>
     return dispatch(moveItemTo(selected, selected + 1))
   }
 
+const CHANGE_FILTER = 'CHANGE_FILTER'
+export const changeFilter = (query) => {
+  return {
+    type: CHANGE_FILTER,
+    query,
+  }
+}
+
 /* ----------------------------------- REDUCER ----------------------------------- */
 
 export default (
   state = {
+    filter: {
+      query: '',
+    },
     isEditing: false,
     isFetching: false,
     byId: {},
     allIds: [],
     orderedIds: [],
+    filteredOrderedIds: [],
     selected: -1,
   },
   action
@@ -209,6 +230,18 @@ export default (
   switch (action.type) {
     case SET_SELECTION:
       return { ...state, selected: action.selected, isEditing: false }
+
+    case CHANGE_FILTER: {
+      const { byId, filter, orderedIds } = state
+      const { query } = action
+      return {
+        ...state,
+        filter: { ...filter, query },
+        filteredOrderedIds:
+          prepareFilteredOrderedIds(query, orderedIds, byId),
+        isEditing: false,
+      }
+    }
 
     case FETCH_TASKS: {
       if (action.result) {
@@ -225,6 +258,8 @@ export default (
           byId,
           allIds,
           orderedIds,
+          filteredOrderedIds:
+            prepareFilteredOrderedIds(state.filter.query, orderedIds, byId),
         }
       } else if (action.error)
         return { ...state, isFetching: false }
@@ -249,6 +284,8 @@ export default (
           byId: newById,
           allIds: newAllIds,
           orderedIds: newOrderedIds,
+          filteredOrderedIds:
+            prepareFilteredOrderedIds(state.filter.query, orderedIds, byId),
         }
       } else {
         return { ...state, isEditing: false }
@@ -276,8 +313,11 @@ export default (
           ? sortItemsByField(allIds, byId, 'order') : orderedIds
         return {
           ...state,
+          filter: { ...state.filter, query: '' },
           byId,
           orderedIds: newOrderedIds,
+          filteredOrderedIds:
+            prepareFilteredOrderedIds(state.filter.query, orderedIds, byId),
         }
       } else {
         return { ...state, isEditing: false }
@@ -290,22 +330,22 @@ export default (
         const { selected, byId, allIds, orderedIds } = state
         const index = orderedIds.findIndex(id => item.order < byId[id].order)
         const newOrderedIds = index === -1 ? [
-          ...orderedIds,
-          item.id,
+          ...orderedIds, item.id
         ] : [
-          ...orderedIds.slice(0, index),
-          item.id,
-          ...orderedIds.slice(index),
+          ...orderedIds.slice(0, index), item.id, ...orderedIds.slice(index)
         ]
         const newById = { ...byId, [item.id]: item }
         const newAllIds = [ ...allIds, item.id ]
         return {
           ...state,
+          filter: { ...state.filter, query: '' },
           byId: newById,
           orderedIds: newOrderedIds,
           allIds: newAllIds,
           selected: index === -1 ? newOrderedIds.length - 1 : index,
           isEditing: true,
+          filteredOrderedIds:
+            prepareFilteredOrderedIds(state.filter.query, orderedIds, byId),
         }
       } else {
         return { ...state, isEditing: false }
@@ -318,5 +358,5 @@ export default (
 
 /* ---------------------------------- SELECTORS ---------------------------------- */
 
-export const getOrderedList = (state) =>
-  state.orderedIds.map(id => state.byId[id])
+export const getFilteredOrderedList = (state) =>
+  state.filteredOrderedIds.map(id => state.byId[id])

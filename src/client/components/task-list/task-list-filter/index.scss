@@ -1,0 +1,32 @@
+.task-list-filter {
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 1px 1px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+
+  .task-list-filter__icon-container {
+    display: flex;
+    color: #aaa;
+    flex: 0 0 auto;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    margin: 0 .6em;
+
+    .task-list-filter__icon {
+      font-size: 0.8em;
+    }
+  }
+  .task-list-filter__input-container {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding-left: 0.1em;
+
+    .task-list-filter__input {
+      font-size: 0.8em;
+    }
+  }
+}

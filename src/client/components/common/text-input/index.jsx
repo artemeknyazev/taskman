@@ -23,6 +23,7 @@ TextInput.propTypes = {
   ref: PropTypes.object,
   value: PropTypes.string,
   defaultValue: PropTypes.string,
+  placeholder: PropTypes.string,
   onKeyDown: PropTypes.func,
   onKeyUp: PropTypes.func,
   onKeyPress: PropTypes.func,

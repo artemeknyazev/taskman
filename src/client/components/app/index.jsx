@@ -1,9 +1,9 @@
 // build fontawesome library before using icons
 import fontawesome from '@fortawesome/fontawesome'
 import {
-  faPlus, faEdit, faTrash, faCheck, faTimes
+  faPlus, faEdit, faTrash, faCheck, faTimes, faSearch,
 } from '@fortawesome/fontawesome-free-solid'
-fontawesome.library.add(faPlus, faEdit, faTrash, faCheck, faTimes)
+fontawesome.library.add(faPlus, faEdit, faTrash, faCheck, faTimes, faSearch)
 
 import React from 'react'
 import { Provider, connect } from 'react-redux'

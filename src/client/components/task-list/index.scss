@@ -1,7 +1,19 @@
 .task-list {
-  .task-list__task-item-container {
-    box-sizing: border-box;
-    padding: .3em .4em 0;
-    /* note: height is fixed in a react component */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+
+  .task-list-filter {
+    flex: 0 0 38.2px;
+    margin: 1.8px .4em 5px;
+  }
+  .task-list__list-container {
+    flex: 1 1 auto;
+
+    .task-list__task-item-container {
+      box-sizing: border-box;
+      padding: .3em .4em 0;
+      /* note: height is fixed in a react component */
+    }
   }
 }

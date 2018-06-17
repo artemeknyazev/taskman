@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { AutoSizer, List } from 'react-virtualized'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
+import _ from 'lodash'
 import {
   setSelection,
   moveItemTo,
@@ -11,9 +12,11 @@ import {
   editItem,
   deleteItem,
   addItemAtIndex,
-  getOrderedList,
+  changeFilter,
+  getFilteredOrderedList,
 } from 'client/reducers'
 import TaskItem from './task-item'
+import TaskListFilter from './task-list-filter'
 
 import './index.scss'
 
@@ -26,10 +29,15 @@ class TaskList extends React.Component {
     // keep item text in list because component could be unmounted
     // and remounted while scrolling when editing
     this.state = {
+      query: '',
       editingText: '',
       isEditing: false,
     }
-    this._inputRef = React.createRef()
+    this._itemInputRef = React.createRef()
+    this._filterInputRef = React.createRef()
+    this._onFilterChange = this._onFilterChange.bind(this)
+    this._onFilterKeyUp = this._onFilterKeyUp.bind(this)
+    this._onFilterApply = _.debounce(this._onFilterApply.bind(this), 300)
     this._onItemTextChange = this._onItemTextChange.bind(this)
     this._onItemTextKeyUp = this._onItemTextKeyUp.bind(this)
     this._onItemCancelChanges = this._onItemCancelChanges.bind(this)
@@ -54,12 +62,12 @@ class TaskList extends React.Component {
 
   componentDidMount() {
     if (this.state.isEditing)
-      this._inputRef.current.focus()
+      this._itemInputRef.current.focus()
   }
 
   componentDidUpdate() {
     if (this.state.isEditing)
-      this._inputRef.current.focus()
+      this._itemInputRef.current.focus()
   }
 
   _onItemTextChange(ev) {
@@ -103,7 +111,7 @@ class TaskList extends React.Component {
         isSelected={isItemSelected}
         isEditing={isItemEditing}
         inputText={editingText}
-        inputRef={this._inputRef}
+        inputRef={this._itemInputRef}
         onTextChange={this._onItemTextChange}
         onTextKeyUp={this._onItemTextKeyUp}
         onItemAddAfter={() => onItemAddAfter(index)}
@@ -130,35 +138,62 @@ class TaskList extends React.Component {
       this.props.onItemMoveTo(oldIndex, newIndex)
   }
 
+  _onFilterChange(ev) {
+    this.setState({ query: ev.target.value }, this._onFilterApply)
+  }
+
+  _onFilterKeyUp(ev) {
+    if (ev.nativeEvent.key === 'Escape') {
+      this._filterInputRef.current.blur()
+    } else if (ev.nativeEvent.key === 'Enter') {
+      this._onFilterApply()
+      this._filterInputRef.current.blur()
+      this.props.onItemSelect(0)
+    }
+  }
+
+  _onFilterApply() {
+    this.props.onFilterChange(this.state.query)
+  }
+
   render() {
     const { defaultHeight, defaultWidth, list, selected } = this.props
-    const { editingText } = this.state
+    const { editingText, query } = this.state
     return (
-      <AutoSizer
-        defaultHeight={defaultHeight}
-        defaultWidth={defaultWidth}
-      >
-        {({ height, width }) => (
-          <SortableTaskList
-            lockAxis="y"
-            distance={4}
-            className="task-list"
-            width={width}
-            height={height}
-            rowCount={list.length}
-            rowHeight={45}
-            overscanRowCount={10}
-            rowRenderer={this._renderRow}
-            onSortEnd={this._onSortEnd}
-            useDragHandle={true}
-            /* note: rerenders when one of the props below has changed */
-            scrollToIndex={selected}
-            list={list}
-            selected={selected}
-            editingText={editingText}
-          />
-        )}
-      </AutoSizer>
+      <div className="task-list">
+        <TaskListFilter
+          inputRef={this._filterInputRef}
+          query={query}
+          onChange={this._onFilterChange}
+          onKeyUp={this._onFilterKeyUp}
+        />
+        <div className="task-list__list-container">
+          <AutoSizer
+            defaultHeight={defaultHeight}
+            defaultWidth={defaultWidth}
+          >
+            {({ height, width }) => (
+              <SortableTaskList
+                lockAxis="y"
+                distance={4}
+                width={width}
+                height={height}
+                rowCount={list.length}
+                rowHeight={45}
+                overscanRowCount={10}
+                rowRenderer={this._renderRow}
+                onSortEnd={this._onSortEnd}
+                useDragHandle={true}
+                /* note: rerenders when one of the props below has changed */
+                scrollToIndex={selected}
+                list={list}
+                selected={selected}
+                editingText={editingText}
+              />
+            )}
+          </AutoSizer>
+        </div>
+      </div>
     )
   }
 }
@@ -174,7 +209,7 @@ TaskList.propTypes = {
 
 const mapStateToProps = (state) => {
   return {
-    list: getOrderedList(state),
+    list: getFilteredOrderedList(state),
     selected: state.selected,
     isEditing: state.isEditing,
     isFetching: state.isFetching,
@@ -182,6 +217,7 @@ const mapStateToProps = (state) => {
 }
 
 const mapDispatchToProps = (dispatch) => ({
+  onFilterChange: (query) => dispatch(changeFilter(query)),
   onItemAddAfter: (index) => dispatch(addItemAtIndex(index + 1)),
   onItemSelect: (index) => dispatch(setSelection(index)),
   onItemMoveTo: (oldIndex, newIndex) => dispatch(moveItemTo(oldIndex, newIndex)),
