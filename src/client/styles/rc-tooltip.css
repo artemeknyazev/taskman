@@ -1,4 +1,7 @@
-/* NOTE: CSS from https://github.com/react-component/tooltip */
+/**
+ * NOTE: CSS from https://github.com/react-component/tooltip
+ * TODO: fix to import this from node_modules
+ **/
 .rc-tooltip {
   position: absolute;
   z-index: 1070;
