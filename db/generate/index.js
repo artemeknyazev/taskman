@@ -19,15 +19,15 @@ Promise.all([
 ]).then(([ tasks, projects, users ]) => {
   const dbData = {
     tasks: {
-      maxId: tasks.length - 1,
+      maxId: tasks.length,
       collection: tasks,
     },
     projects: {
-      maxId: projects.length - 1,
+      maxId: projects.length,
       collection: projects,
     },
     users: {
-      maxId: users.length - 1,
+      maxId: users.length,
       collection: users,
     },
   }

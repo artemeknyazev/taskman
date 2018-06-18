@@ -3,6 +3,7 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
+  padding: 0 0.6em;
 
   .task-list-filter__icon-container {
     display: flex;
@@ -11,7 +12,7 @@
     flex-direction: column;
     justify-content: center;
     min-width: 0;
-    margin: 0 .6em;
+    margin-right: .6em;
 
     .task-list-filter__icon {
       font-size: 0.8em;
@@ -27,6 +28,24 @@
 
     .task-list-filter__input {
       font-size: 0.8em;
+    }
+  }
+  .task-list-filter__controls-container {
+    flex: 0 0 auto;
+    min-width: 0;
+
+    .task-list-filter__control-button {
+      font-size: 1em;
+      height: 100%;
+      width: 2em;
+    }
+  }
+
+  &.task-list-filter--empty {
+    .task-list-filter__controls-container {
+      .task-list-filter__clear-filter-button {
+        display: none;
+      }
     }
   }
 }

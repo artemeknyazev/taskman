@@ -16,7 +16,7 @@ const getOrderBetweenIndices = (beforeIndex, afterIndex, byId, orderedIds) => {
       byId[orderedIds[beforeIndex]].order) / 2
 }
 
-const prepareFilteredOrderedIds = (query, orderedIds, byId) =>
+const prepareFilteredOrderedIds = ({ query }, orderedIds, byId) =>
   query && query.length > 2 ? (
     orderedIds.filter(id => (
       byId[id].text.toLowerCase().includes(query.toLowerCase())
@@ -24,6 +24,16 @@ const prepareFilteredOrderedIds = (query, orderedIds, byId) =>
   ) : (
     orderedIds
   )
+
+const insertIntoOrderedList = (id, order, orderedIds, byId) => {
+  const prevIndex = orderedIds.indexOf(id)
+  const result = prevIndex === -1 ? [ ...orderedIds ] :
+    [ ...orderedIds.slice(0, prevIndex), ...orderedIds.slice(prevIndex + 1) ]
+  const index = result.findIndex(itemId => order < byId[itemId].order)
+  if (index === -1) result.push(id)
+  else result.splice(index, 0, id)
+  return result
+}
 
 /* ----------------------------------- ACTIONS ----------------------------------- */
 
@@ -56,13 +66,21 @@ export const addItemAction = (data, error, result) => ({
   error,
   result,
 })
-export const addItemAtIndex = (index) =>
+export const addItemAfterIndex = (index = null) =>
   (dispatch, getState) => {
-    const { byId, orderedIds } = getState()
-    const data = {
+    const { byId, orderedIds, filteredOrderedIds } = getState()
+    let data = {
       text: 'New task',
       completed: false,
-      order: getOrderBetweenIndices(index - 1, index, byId, orderedIds),
+    }
+    if (index === null || orderedIds.length === 0) {
+      data.order = 0.0
+    } else if (filteredOrderedIds.length === 0) {
+      data.order = byId[orderedIds[orderedIds.length-1]].order + 1.0
+    } else {
+      const id = filteredOrderedIds[index]
+      const orderedIndex = orderedIds.indexOf(id)
+      data.order = getOrderBetweenIndices(orderedIndex, orderedIndex + 1, byId, orderedIds)
     }
     dispatch(addItemAction(data))
     return addTask(data).then(
@@ -72,13 +90,10 @@ export const addItemAtIndex = (index) =>
   }
 export const addAfterSelectedItem = () =>
   (dispatch, getState) => {
-    const { selected } = getState()
-    return dispatch(addItemAtIndex(selected + 1))
-  }
-export const addBeforeSelectedItem = () =>
-  (dispatch, getState) => {
-    const { selected } = getState()
-    return dispatch(addItemAtIndex(selected === -1 ? 0 : selected))
+    const { selected, filteredOrderedIds } = getState()
+    return dispatch(addItemAfterIndex(
+      selected === -1 ? filteredOrderedIds.length - 1 : selected
+    ))
   }
 
 // TODO: handle delete fail
@@ -100,10 +115,10 @@ export const deleteItem = (id) =>
   }
 export const deleteSelectedItem = () =>
   (dispatch, getState) => {
-    const { selected, orderedIds } = getState()
+    const { selected, filteredOrderedIds } = getState()
     if (selected === -1)
       return Promise.resolve()
-    const id = orderedIds[selected]
+    const id = filteredOrderedIds[selected]
     return dispatch(deleteItem(id))
   }
 
@@ -160,44 +175,52 @@ export const clearSelection = () =>
   setSelection(-1)
 export const moveSelectionUp = () =>
   (dispatch, getState) => {
-    const { selected, orderedIds } = getState()
+    const { selected, filteredOrderedIds } = getState()
     if (selected === -1)
-      return dispatch(setSelection(orderedIds.length - 1))
+      return dispatch(setSelection(filteredOrderedIds.length - 1))
     if (selected > 0)
       return dispatch(setSelection(selected - 1))
     return Promise.resolve()
   }
 export const moveSelectionDown = () =>
   (dispatch, getState) => {
-    const { selected, orderedIds } = getState()
+    const { selected, filteredOrderedIds } = getState()
     if (selected === -1)
       return dispatch(setSelection(0))
-    if (selected < orderedIds.length - 1)
+    if (selected < filteredOrderedIds.length - 1)
       return dispatch(setSelection(selected + 1))
     return Promise.resolve()
   }
 
 export const moveItemTo = (oldIndex, newIndex) =>
   (dispatch, getState) => {
-    const { orderedIds, byId } = getState()
-    const id = orderedIds[oldIndex]
-    const [ beforeIndex, afterIndex ] = newIndex < oldIndex
-      ? [ newIndex - 1, newIndex ] : [ newIndex, newIndex + 1 ]
-    const order = getOrderBetweenIndices(beforeIndex, afterIndex, byId, orderedIds)
+    // TODO: FIX HERE to use filteredOrderedIds
+    const { filteredOrderedIds, orderedIds, byId } = getState()
+    const id = filteredOrderedIds[oldIndex]
+    let orderedIndex = orderedIds.indexOf(filteredOrderedIds[newIndex])
+    let beforeOrderedIndex, afterOrderedIndex;
+    if (newIndex < oldIndex) {
+      beforeOrderedIndex = orderedIndex - 1
+      afterOrderedIndex = orderedIndex
+    } else { // newIndex > oldIndex
+      beforeOrderedIndex = orderedIndex
+      afterOrderedIndex = orderedIndex + 1
+    }
+    const order = getOrderBetweenIndices(beforeOrderedIndex, afterOrderedIndex, byId, orderedIds)
     return dispatch(editItem(id, { order }))
       .then(dispatch(setSelection(newIndex)))
   }
 export const moveItemUp = () =>
   (dispatch, getState) => {
-    const { orderedIds, selected } = getState()
-    if (selected <= 0 || selected >= orderedIds.length)
+    const { filteredOrderedIds, selected } = getState()
+    if (selected <= 0 || selected >= filteredOrderedIds.length)
       return Promise.resolve()
     return dispatch(moveItemTo(selected, selected - 1))
   }
 export const moveItemDown = () =>
   (dispatch, getState) => {
-    const { orderedIds, selected } = getState()
-    if (selected < 0 || selected >= orderedIds.length - 1)
+    const { filteredOrderedIds, selected } = getState()
+    if (selected < 0 || selected >= filteredOrderedIds.length - 1)
       return Promise.resolve()
     return dispatch(moveItemTo(selected, selected + 1))
   }
@@ -238,7 +261,7 @@ export default (
         ...state,
         filter: { ...filter, query },
         filteredOrderedIds:
-          prepareFilteredOrderedIds(query, orderedIds, byId),
+          prepareFilteredOrderedIds({ query }, orderedIds, byId),
         isEditing: false,
       }
     }
@@ -254,12 +277,13 @@ export default (
         let orderedIds = sortItemsByField(allIds, byId, 'order')
         return {
           ...state,
+          filter: { ...state.filter, query: '' },
           isFetching: false,
           byId,
           allIds,
           orderedIds,
           filteredOrderedIds:
-            prepareFilteredOrderedIds(state.filter.query, orderedIds, byId),
+            prepareFilteredOrderedIds(state.filter, orderedIds, byId),
         }
       } else if (action.error)
         return { ...state, isFetching: false }
@@ -269,11 +293,11 @@ export default (
 
     case DELETE_ITEM: {
       if (action.result) {
-        const { selected, orderedIds, allIds, byId } = state
+        const { filter, selected, orderedIds, allIds, byId } = state
         const newOrderedIds = orderedIds.slice()
-        newOrderedIds.splice(newOrderedIds.findIndex(id => id === action.id), 1)
+        newOrderedIds.splice(newOrderedIds.indexOf(action.id), 1)
         const newAllIds = allIds.slice()
-        newAllIds.splice(newAllIds.findIndex(id => id === action.id), 1)
+        newAllIds.splice(newAllIds.indexOf(action.id), 1)
         let newSelected = selected !== -1 && newOrderedIds.length
           ? clamp(selected, 0, newOrderedIds.length - 1) : -1
         let newById = newAllIds.reduce((newById, id) =>
@@ -285,7 +309,7 @@ export default (
           allIds: newAllIds,
           orderedIds: newOrderedIds,
           filteredOrderedIds:
-            prepareFilteredOrderedIds(state.filter.query, orderedIds, byId),
+            prepareFilteredOrderedIds(filter, newOrderedIds, newById),
         }
       } else {
         return { ...state, isEditing: false }
@@ -296,7 +320,7 @@ export default (
       return { ...state, isEditing: true }
 
     case ITEM_START_EDITING: {
-      const selected = state.orderedIds.findIndex(id => id === action.id)
+      const selected = state.orderedIds.indexOf(action.id)
       return { ...state, selected, isEditing: true }
     }
 
@@ -305,19 +329,20 @@ export default (
 
     case EDIT_ITEM: {
       if (action.result) {
-        const { allIds, orderedIds } = state
+        const { filter, byId, allIds, orderedIds } = state
         const { result: item, data } = action
-        const byId = { ...state.byId, [item.id]: item }
-        // reorder only when order has changed
-        const newOrderedIds = data.hasOwnProperty('order')
-          ? sortItemsByField(allIds, byId, 'order') : orderedIds
+        const newById = { ...byId, [item.id]: item }
+        const newOrderedIds = sortItemsByField(allIds, newById, 'order')
+        let newFilteredOrderedIds =
+          prepareFilteredOrderedIds(filter, newOrderedIds, newById)
+        // Keep an edited item in a new filtered array even if it is not filtered
+        newFilteredOrderedIds =
+          insertIntoOrderedList(item.id, item.order, newFilteredOrderedIds, newById)
         return {
           ...state,
-          filter: { ...state.filter, query: '' },
-          byId,
+          byId: newById,
           orderedIds: newOrderedIds,
-          filteredOrderedIds:
-            prepareFilteredOrderedIds(state.filter.query, orderedIds, byId),
+          filteredOrderedIds: newFilteredOrderedIds,
         }
       } else {
         return { ...state, isEditing: false }
@@ -327,25 +352,24 @@ export default (
     case ADD_ITEM: {
       if (action.result) {
         const item = action.result
-        const { selected, byId, allIds, orderedIds } = state
-        const index = orderedIds.findIndex(id => item.order < byId[id].order)
-        const newOrderedIds = index === -1 ? [
-          ...orderedIds, item.id
-        ] : [
-          ...orderedIds.slice(0, index), item.id, ...orderedIds.slice(index)
-        ]
+        const { filter, byId, allIds, orderedIds } = state
         const newById = { ...byId, [item.id]: item }
-        const newAllIds = [ ...allIds, item.id ]
+        const newAllIds = [...allIds, item.id]
+        const newOrderedIds =
+          insertIntoOrderedList(item.id, item.order, orderedIds, newById)
+        let newFilteredOrderedIds = 
+          prepareFilteredOrderedIds(filter, newOrderedIds, newById)
+        // Keep an added item in a filtered array to allow a user to edit it
+        newFilteredOrderedIds =
+          insertIntoOrderedList(item.id, item.order, newFilteredOrderedIds, newById)
         return {
           ...state,
-          filter: { ...state.filter, query: '' },
           byId: newById,
           orderedIds: newOrderedIds,
           allIds: newAllIds,
-          selected: index === -1 ? newOrderedIds.length - 1 : index,
+          selected: newFilteredOrderedIds.indexOf(item.id),
           isEditing: true,
-          filteredOrderedIds:
-            prepareFilteredOrderedIds(state.filter.query, orderedIds, byId),
+          filteredOrderedIds: newFilteredOrderedIds,
         }
       } else {
         return { ...state, isEditing: false }
@@ -358,5 +382,7 @@ export default (
 
 /* ---------------------------------- SELECTORS ---------------------------------- */
 
+// TODO: this computes derived data, so result is always new;
+//       should use memoized selector to fix rerendering
 export const getFilteredOrderedList = (state) =>
   state.filteredOrderedIds.map(id => state.byId[id])

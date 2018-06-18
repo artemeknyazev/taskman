@@ -16,4 +16,19 @@
       /* note: height is fixed in a react component */
     }
   }
+  .task-list__empty {
+    display: flex;
+    flex-direction: row;
+    font-size: 0.8em;
+    justify-content: center;
+    height: 100%;
+
+    .task-list__empty-text {
+      margin: auto;
+
+      a {
+        margin-left: .4em;
+      }
+    }
+  }
 }

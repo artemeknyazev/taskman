@@ -11,7 +11,7 @@ import {
   stopEditing,
   editItem,
   deleteItem,
-  addItemAtIndex,
+  addItemAfterIndex,
   setFilter,
   getFilteredOrderedList,
 } from 'client/reducers'
@@ -37,11 +37,13 @@ class TaskList extends React.Component {
     this._filterInputRef = React.createRef()
     this._onFilterChange = this._onFilterChange.bind(this)
     this._onFilterKeyUp = this._onFilterKeyUp.bind(this)
+    this._onFilterClear = this._onFilterClear.bind(this)
     this._onFilterApply = _.debounce(this._onFilterApply.bind(this), 300)
     this._onItemTextChange = this._onItemTextChange.bind(this)
     this._onItemTextKeyUp = this._onItemTextKeyUp.bind(this)
     this._onItemCancelChanges = this._onItemCancelChanges.bind(this)
     this._onItemApplyChanges = this._onItemApplyChanges.bind(this)
+    this._renderEmpty = this._renderEmpty.bind(this)
     this._renderRow = this._renderRow.bind(this)
     this._onSortEnd = this._onSortEnd.bind(this)
   }
@@ -93,6 +95,19 @@ class TaskList extends React.Component {
     }
   }
 
+  _renderEmpty() {
+    const { onItemAddAfter } = this.props
+    const { query } = this.state
+    return (
+      <div className="task-list__empty">
+        <span className="task-list__empty-text">
+          {query ? ('No tasks are matching this filter.') : ('There are no tasks in this project.')}
+          <a href="#" onClick={onItemAddAfter}>Add one?</a>
+        </span>
+      </div>
+    )
+  }
+
   // TODO: check why selecting an item and then scrolling is laggy in Safari
   _renderRow({ index, key, style, isScrolling }) {
     const {
@@ -142,6 +157,10 @@ class TaskList extends React.Component {
     this.setState({ query: ev.target.value }, this._onFilterApply)
   }
 
+  _onFilterClear() {
+    this.setState({ query: '' }, this._onFilterApply)
+  }
+
   _onFilterKeyUp(ev) {
     if (ev.nativeEvent.key === 'Escape') {
       this._filterInputRef.current.blur()
@@ -166,6 +185,7 @@ class TaskList extends React.Component {
           query={query}
           onChange={this._onFilterChange}
           onKeyUp={this._onFilterKeyUp}
+          onClear={this._onFilterClear}
         />
         <div className="task-list__list-container">
           <AutoSizer
@@ -181,6 +201,7 @@ class TaskList extends React.Component {
                 rowCount={list.length}
                 rowHeight={45}
                 overscanRowCount={10}
+                noRowsRenderer={this._renderEmpty}
                 rowRenderer={this._renderRow}
                 onSortEnd={this._onSortEnd}
                 useDragHandle={true}
@@ -216,7 +237,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   onFilterApply: (query) => dispatch(setFilter(query)),
-  onItemAddAfter: (index) => dispatch(addItemAtIndex(index + 1)),
+  onItemAddAfter: (index = null) => dispatch(addItemAfterIndex(index)),
   onItemSelect: (index) => dispatch(setSelection(index)),
   onItemMoveTo: (oldIndex, newIndex) => dispatch(moveItemTo(oldIndex, newIndex)),
   onItemStartEditing: (id) => dispatch(itemStartEditing(id)),

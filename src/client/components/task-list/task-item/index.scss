@@ -45,13 +45,14 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      line-height: 1.6;
     }
   }
   .task-item__controls-container {
     display: flex;
     flex: 0 0 auto;
     min-width: 0;
-    padding-top: .355em;
+    padding-top: .25em;
     visibility: hidden;
 
     .task-item__control-button {

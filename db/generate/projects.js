@@ -42,7 +42,8 @@ const generate = (projectCount) => {
       id: i,
       name,
       slug: prepareSlug(name),
-      status: Math.random() < 0.95 ? 'active' : 'inactive',
+      //status: Math.random() < 0.95 ? 'active' : 'inactive',
+      status: 'active',
       createdAt,
       updatedAt,
     })

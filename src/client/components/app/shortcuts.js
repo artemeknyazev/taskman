@@ -7,7 +7,6 @@ import {
   deleteSelectedItem,
   startSelectedItemEditing,
   addAfterSelectedItem,
-  addBeforeSelectedItem,
 } from 'client/reducers'
 
 export default [
@@ -35,10 +34,6 @@ export default [
     type: 'keyup',
     check: (key) => key === 'Escape',
     callback: (dispatch) => dispatch(clearSelection()),
-  }, {
-    type: 'keyup',
-    check: (key, { control, meta, shift }) => key === 'Enter' && (control || meta) && shift,
-    callback: (dispatch) => dispatch(addBeforeSelectedItem()),
   }, {
     type: 'keyup',
     check: (key, { control, meta }) => key === 'Enter' && (control || meta),

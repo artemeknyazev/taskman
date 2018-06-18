@@ -1,7 +1,9 @@
 import React from 'react'
+import cx from 'classnames'
 import PropTypes from 'prop-types'
 import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import TextInput from 'client/components/common/text-input'
+import FaButton from 'client/components/common/fa-button'
 
 import './index.scss'
 
@@ -10,8 +12,15 @@ const TaskListFilter = ({
   inputRef = null,
   onChange,
   onKeyUp,
+  onClear,
 }) => (
-  <div className="task-list-filter">
+  <div
+    className={cx({
+      'task-list-filter': true,
+      'task-list-filter--empty': query === '',
+      'task-list-filter--not-empty': query !== '',
+    })}
+  >
     <div className="task-list-filter__icon-container">
       <FontAwesomeIcon className="task-list-filter__icon" icon="search" />
     </div>
@@ -23,6 +32,14 @@ const TaskListFilter = ({
         onChange={onChange}
         onKeyUp={onKeyUp}
         placeholder="Search tasks"
+      />
+    </div>
+    <div className="task-list-filter__controls-container">
+      <FaButton
+        className="task-list-filter__clear-filter-button task-list-filter__control-button"
+        icon="times-circle"
+        tooltip="Clear filter"
+        onClick={onClear}
       />
     </div>
   </div>

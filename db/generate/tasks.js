@@ -37,7 +37,8 @@ const generate = (taskCount, projectCount, userCount) => {
       order: i,
       projectId: Math.ceil(Math.random() * projectCount),
       userId: Math.ceil(Math.random() * userCount),
-      status: Math.random() < 0.95 ? 'active' : 'inactive',
+      //status: Math.random() < 0.95 ? 'active' : 'inactive',
+      status: 'active',
       createdAt,
       updatedAt,
     })
