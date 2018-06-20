@@ -1,6 +1,5 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router-dom'
 
 import { clearSelection } from 'client/reducers/task-list'
 import shortcuts from './shortcuts'
@@ -31,7 +30,6 @@ class ProjectTaskListPage extends React.PureComponent {
         shortcuts={shortcuts}
         isPreventKeyboardScroll={true}
         dispatch={this.props.dispatch}
-        history={this.props.history}
       >
         <TaskList />
       </DocumentShortcuts>
@@ -39,4 +37,4 @@ class ProjectTaskListPage extends React.PureComponent {
   }
 }
 
-export default withRouter(connect()(ProjectTaskListPage))
+export default connect()(ProjectTaskListPage)

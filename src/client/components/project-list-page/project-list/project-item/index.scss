@@ -25,7 +25,29 @@
     }
   }
 
+  .project-item__controls-container {
+    display: flex;
+    flex: 0 0 auto;
+    min-width: 0;
+    padding-top: .25em;
+    visibility: hidden;
+
+    .project-item__control-button {
+      border-radius: 1.225em;
+      display: inline-block;
+      margin-left: 0.5em;
+      height: 2.5em;
+      width: 2.5em;
+    }
+  }
+
   &.project-item--selected {
     background-color: #fdf9f9;
+  }
+
+  &:hover {
+    .project-item__controls-container {
+      visibility: visible;
+    }
   }
 }

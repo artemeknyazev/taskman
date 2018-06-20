@@ -2,10 +2,8 @@ import {
   clearSelection,
   moveSelectionUp,
   moveSelectionDown,
+  openSelectedProject,
 } from 'client/reducers/project-list'
-import {
-  getProjectListSelectedProjectSlug,
-} from 'client/reducers'
 
 export default [
   {
@@ -23,10 +21,6 @@ export default [
   }, {
     type: 'keyup',
     check: (key) => key === 'Enter',
-    callback: (dispatch, state, { history }) => {
-      const slug = getProjectListSelectedProjectSlug(state)
-      if (slug)
-        history.push(`/projects/${slug}`)
-    },
+    callback: (dispatch) => dispatch(openSelectedProject()),
   }
 ]

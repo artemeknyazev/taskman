@@ -7,8 +7,9 @@ import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { Provider } from 'react-redux'
 import { StaticRouter } from 'react-router-dom'
+import { createMemoryHistory } from 'history'
 
-import configureStore from 'client/store'
+import { configureStore } from 'client/store'
 import { appInit } from 'client/reducers'
 import App from 'client/components/app'
 
@@ -32,7 +33,10 @@ app.use('*', (req, res, next) => {
 app.use('/', routes)
 
 app.get('*', (req, res) => {
-  const store = configureStore()
+  const history = createMemoryHistory({
+    initialEntries: [req.url]
+  })
+  const store = configureStore(history)
   const context = {}
   const markup = (
     <Provider store={store}>
@@ -52,7 +56,7 @@ app.get('*', (req, res) => {
       res.redirect(301, context.url)
     } else {
       res.send(indexHtml({
-        title: "Taskman",
+        title: 'Taskman',
         content,
         initialState: store.getState(),
         domain,

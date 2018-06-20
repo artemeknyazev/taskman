@@ -31,9 +31,6 @@ export const getProjectListOrderedList = (state) =>
 export const getProjectListSelectedId = (state) =>
   ProjectList.getSelectedId(getProjectList(state))
 
-export const getProjectListSelectedProjectSlug = (state) =>
-  ProjectList.getSelectedProjectSlug(getProjectList(state))
-
 export const getProjectListIsFetching = (state) =>
   ProjectList.getIsFetching(getProjectList(state))
 

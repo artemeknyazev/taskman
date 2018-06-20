@@ -1,10 +1,10 @@
 // build fontawesome library before using icons
 import fontawesome from '@fortawesome/fontawesome'
 import {
-  faPlus, faEdit, faTrash, faCheck, faTimes, faSearch, faTimesCircle
+  faPlus, faEdit, faTrash, faCheck, faTimes, faSearch, faTimesCircle, faDoorOpen,
 } from '@fortawesome/fontawesome-free-solid'
 fontawesome.library.add(faPlus, faEdit, faTrash, faCheck, faTimes, faSearch,
-  faTimesCircle)
+  faTimesCircle, faDoorOpen)
 
 import React from 'react'
 import { Redirect, Route, Switch }from 'react-router-dom'

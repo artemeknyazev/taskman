@@ -1,7 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
-import { withRouter } from 'react-router-dom'
 
 class DocumentShortcuts extends React.Component {
   constructor(props) {
@@ -53,17 +51,7 @@ class DocumentShortcuts extends React.Component {
         (isEditableTarget ? shortcut.allowOnEditableTarget : true) &&
         shortcut.check(key, this.state)
       )
-        return shortcut.callback(
-          this.props.dispatch,
-          // HACK: hack to reroute in a shortcut callback instead of a dispatched action
-          // TODO: use connected-react-router (though there's no SSR)?
-          this.props.state,
-          {
-            match: this.props.match,
-            location: this.props.location,
-            history: this.props.history,
-          },
-        )
+        return shortcut.callback(this.props.dispatch)
   }
 
   render() {
@@ -95,8 +83,4 @@ DocumentShortcuts.propTypes = {
   isPreventKeyboardScroll: PropTypes.bool,
 }
 
-const mapStateToProps = (state) => ({
-  state,
-})
-
-export default withRouter(connect(mapStateToProps)(DocumentShortcuts))
+export default DocumentShortcuts

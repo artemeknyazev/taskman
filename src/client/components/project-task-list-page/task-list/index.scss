@@ -15,6 +15,10 @@
       box-sizing: border-box;
       padding: .3em .4em 0;
       /* note: height is fixed in a react component */
+
+      .task-item {
+        cursor: pointer;
+      }
     }
   }
   .task-list__empty {

@@ -1,22 +1,24 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
-import { BrowserRouter as Router } from 'react-router-dom'
+import { ConnectedRouter } from 'connected-react-router'
+import { createBrowserHistory } from 'history'
 
-import configureStore from 'client/store'
+import { configureStore } from 'client/store'
 import App from 'client/components/app'
 import './index.scss'
 
+const history = createBrowserHistory()
 const initialState = window.__INITIAL_STATE__
 delete window.__INITIAL_STATE__
-const store = configureStore(initialState)
+const store = configureStore(history, initialState)
 
 window.onload = () => {
   ReactDOM.hydrate(
     <Provider store={store}>
-      <Router>
+      <ConnectedRouter history={history}>
         <App />
-      </Router>
+      </ConnectedRouter>
     </Provider>,
     document.getElementById('root')
   )

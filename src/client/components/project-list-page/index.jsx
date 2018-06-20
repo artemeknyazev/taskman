@@ -29,6 +29,7 @@ class ProjectListPage extends React.PureComponent {
       <DocumentShortcuts
         shortcuts={shortcuts}
         isPreventKeyboardScroll={true}
+        dispatch={this.props.dispatch}
       >
         <ProjectList />
       </DocumentShortcuts>

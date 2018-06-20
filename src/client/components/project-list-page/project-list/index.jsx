@@ -1,8 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router-dom'
 import ProjectItem from './project-item';
+import {
+  openProject,
+  setSelection,
+} from 'client/reducers/project-list'
 import {
   getProjectListOrderedList,
   getProjectListSelectedId,
@@ -13,12 +16,17 @@ import './index.scss'
 class ProjectList extends React.Component {
   constructor(props) {
     super(props)
-    this._onProjectClick = this._onProjectClick.bind(this)
+    this._onItemClick = this._onItemClick.bind(this)
+    this._onItemOpen = this._onItemOpen.bind(this)
     this._renderRow = this._renderRow.bind(this)
   }
 
-  _onProjectClick(id, slug) {
-    this.props.history.push(`/projects/${slug}`)
+  _onItemClick(id) {
+    this.props.onItemClick(id)
+  }
+
+  _onItemOpen(id) {
+    this.props.onItemOpen(id)
   }
 
   _renderRow({ id, slug, name }, index) {
@@ -33,7 +41,8 @@ class ProjectList extends React.Component {
           slug={slug}
           name={name}
           isSelected={id === selectedProjectId}
-          onClick={this._onProjectClick}
+          onClick={this._onItemClick}
+          onOpen={this._onItemOpen}
         />
       </div>
     )
@@ -70,4 +79,9 @@ const mapStateToProps = (state) => {
   })
 }
 
-export default withRouter(connect(mapStateToProps)(ProjectList))
+const mapDispatchToProps = (dispatch) => ({
+  onItemClick: (id) => dispatch(setSelection(id)),
+  onItemOpen: (id) => dispatch(openProject(id)),
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProjectList)

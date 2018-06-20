@@ -1,3 +1,4 @@
+import { push } from 'connected-react-router'
 import { sortItemsByField } from 'utils'
 import {
   getProjects,
@@ -58,6 +59,19 @@ export const moveSelectionDown = () =>
     return dispatch(clearSelection())
   }
 
+export const openProject = (id) =>
+  (dispatch, getState) => {
+    const { byId } = getProjectList(getState())
+    const slug = byId[id].slug
+    return dispatch(push(`/projects/${slug}`))
+  }
+
+export const openSelectedProject = () =>
+  (dispatch, getState) => {
+    const { selectedId } = getProjectList(getState())
+    return dispatch(openProject(selectedId))
+  }
+
 /* ----------------------------------- REDUCER ----------------------------------- */
 
 const reducer = (
@@ -111,11 +125,6 @@ export const getOrderedList = (state) =>
 
 export const getSelectedId = (state) =>
   state.selectedId
-
-export const getSelectedProjectSlug = (state) =>
-  state.selectedId
-    ? state.byId[state.selectedId].slug
-    : null
 
 export const getIsFetching = (state) =>
   state.isFetching
