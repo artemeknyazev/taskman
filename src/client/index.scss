@@ -1,0 +1,5 @@
+@import 'styles/reset.css';
+@import 'styles/default.scss';
+@import './../../node_modules/rc-tooltip/assets/bootstrap.css'; // original
+@import 'styles/rc-tooltip.scss'; // overriding styles
+@import 'styles/noselect.css';

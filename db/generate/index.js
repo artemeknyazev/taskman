@@ -9,7 +9,7 @@ process.stdout.write(`Started generating database\n`)
 process.stdout.write(`Output path is ${outputPath}\n`)
 
 const taskCount = 20
-const projectCount = 5
+const projectCount = 2
 const userCount = 10
 
 Promise.all([

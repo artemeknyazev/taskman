@@ -7,40 +7,40 @@ import {
   deleteSelectedItem,
   startSelectedItemEditing,
   addAfterSelectedItem,
-} from 'client/reducers'
+} from 'client/reducers/task-list'
 
 export default [
   {
     type: 'keydown',
     check: (key, { control, meta }) => key === 'ArrowUp' && (control || meta),
-    callback: (dispatch) => dispatch(moveItemUp()),
+    callback: (dispatch, state, { match }) => dispatch(moveItemUp()),
   }, {
     type: 'keydown',
     check: (key, { control, meta }) => key === 'ArrowDown' && (control || meta),
-    callback: (dispatch) => dispatch(moveItemDown()),
+    callback: (dispatch, state, { match }) => dispatch(moveItemDown()),
   }, {
     type: 'keydown',
     check: (key) => key === 'ArrowUp',
-    callback: (dispatch) => dispatch(moveSelectionUp()),
+    callback: (dispatch, state, { match }) => dispatch(moveSelectionUp()),
   }, {
     type: 'keydown',
     check: (key) => key === 'ArrowDown',
-    callback: (dispatch) => dispatch(moveSelectionDown()),
+    callback: (dispatch, state, { match }) => dispatch(moveSelectionDown()),
   }, {
     type: 'keyup',
     check: (key) => key === 'Delete' || key === 'Backspace',
-    callback: (dispatch) => dispatch(deleteSelectedItem()),
+    callback: (dispatch, state, { match }) => dispatch(deleteSelectedItem()),
   }, {
     type: 'keyup',
     check: (key) => key === 'Escape',
-    callback: (dispatch) => dispatch(clearSelection()),
+    callback: (dispatch, state, { match }) => dispatch(clearSelection()),
   }, {
     type: 'keyup',
     check: (key, { control, meta }) => key === 'Enter' && (control || meta),
-    callback: (dispatch) => dispatch(addAfterSelectedItem()),
+    callback: (dispatch, state, { match }) => dispatch(addAfterSelectedItem()),
   }, {
     type: 'keyup',
     check: (key) => key === 'Enter',
-    callback: (dispatch) => dispatch(startSelectedItemEditing()),
+    callback: (dispatch, state, { match }) => dispatch(startSelectedItemEditing()),
   }
 ]

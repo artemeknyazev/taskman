@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { AutoSizer, List } from 'react-virtualized'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
-import _ from 'lodash'
+import { debounce } from 'lodash'
 import {
   setSelection,
   moveItemTo,
@@ -13,7 +13,12 @@ import {
   deleteItem,
   addItemAfterIndex,
   setFilter,
-  getFilteredOrderedList,
+} from 'client/reducers/task-list'
+import {
+  getTaskListFilteredOrderedList,
+  getTaskListSelectedId,
+  getTaskListIsEditing,
+  getTaskListIsFetching,
 } from 'client/reducers'
 import TaskItem from './task-item'
 import TaskListFilter from './task-list-filter'
@@ -23,12 +28,13 @@ import './index.scss'
 const SortableTaskItem = SortableElement(TaskItem)
 const SortableTaskList = SortableContainer(List)
 
-class TaskList extends React.Component {
+class ProjectTaskList extends React.Component {
   constructor(props) {
     super(props)
     // keep item text in list because component could be unmounted
     // and remounted while scrolling when editing
     this.state = {
+      selectedIndex: -1,
       query: '',
       editingText: '',
       isEditing: false,
@@ -38,7 +44,7 @@ class TaskList extends React.Component {
     this._onFilterChange = this._onFilterChange.bind(this)
     this._onFilterKeyUp = this._onFilterKeyUp.bind(this)
     this._onFilterClear = this._onFilterClear.bind(this)
-    this._onFilterApply = _.debounce(this._onFilterApply.bind(this), 300)
+    this._onFilterApply = debounce(this._onFilterApply.bind(this), 300)
     this._onItemTextChange = this._onItemTextChange.bind(this)
     this._onItemTextKeyUp = this._onItemTextKeyUp.bind(this)
     this._onItemCancelChanges = this._onItemCancelChanges.bind(this)
@@ -49,17 +55,17 @@ class TaskList extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    const { list, selected } = props
+    const { list, selectedId } = props
     let { editingText, isEditing } = state
+    const selectedIndex = list.findIndex(item => item.id === selectedId)
     if (!state.isEditing && props.isEditing) {
-      const { id, text } = list[selected]
       isEditing = true
-      editingText = text
+      editingText = list[selectedIndex].text
     } else if (state.isEditing && !props.isEditing) {
       isEditing = false
       editingText = ''
     }
-    return { editingText, isEditing }
+    return { editingText, isEditing, selectedIndex }
   }
 
   componentDidMount() {
@@ -82,9 +88,8 @@ class TaskList extends React.Component {
 
   _onItemApplyChanges() {
     const { editingText } = this.state
-    const { list, selected } = this.props
-    const id = list[selected].id
-    this.props.onItemEditFinished(id, { text: editingText })
+    const { selectedId } = this.props
+    this.props.onItemEditFinished(selectedId, { text: editingText })
   }
 
   _onItemTextKeyUp(ev) {
@@ -111,12 +116,12 @@ class TaskList extends React.Component {
   // TODO: check why selecting an item and then scrolling is laggy in Safari
   _renderRow({ index, key, style, isScrolling }) {
     const {
-      list, selected,
+      list, selectedId,
       onItemSelect, onItemDelete, onItemStartEditing, onItemAddAfter,
     } = this.props
     const { isEditing, editingText } = this.state
     const { id, text } = list[index]
-    const isItemSelected = selected === index
+    const isItemSelected = selectedId === id
     const isItemEditing = isItemSelected && isEditing
     const elem = (
       <SortableTaskItem
@@ -130,7 +135,7 @@ class TaskList extends React.Component {
         onTextChange={this._onItemTextChange}
         onTextKeyUp={this._onItemTextKeyUp}
         onItemAddAfter={() => onItemAddAfter(index)}
-        onItemClick={() => onItemSelect(index)}
+        onItemClick={() => onItemSelect(id)}
         onItemStartEditing={() => onItemStartEditing(id)}
         onItemCancelChanges={this._onItemCancelChanges}
         onItemApplyChanges={this._onItemApplyChanges}
@@ -167,7 +172,9 @@ class TaskList extends React.Component {
     } else if (ev.nativeEvent.key === 'Enter') {
       this._onFilterApply()
       this._filterInputRef.current.blur()
-      this.props.onItemSelect(0)
+      const { list } = this.props
+      if (list.length)
+        this.props.onItemSelect(list[0].id)
     }
   }
 
@@ -176,8 +183,8 @@ class TaskList extends React.Component {
   }
 
   render() {
-    const { defaultHeight, defaultWidth, list, selected } = this.props
-    const { editingText, query } = this.state
+    const { list, selectedId } = this.props
+    const { editingText, query, selectedIndex } = this.state
     return (
       <div className="task-list">
         <TaskListFilter
@@ -189,8 +196,9 @@ class TaskList extends React.Component {
         />
         <div className="task-list__list-container">
           <AutoSizer
-            defaultHeight={defaultHeight}
-            defaultWidth={defaultWidth}
+            // TODO: think about better way of supplying initial dimensions
+            defaultHeight={0}
+            defaultWidth={0}
           >
             {({ height, width }) => (
               <SortableTaskList
@@ -206,9 +214,9 @@ class TaskList extends React.Component {
                 onSortEnd={this._onSortEnd}
                 useDragHandle={true}
                 /* note: rerenders when one of the props below has changed */
-                scrollToIndex={selected}
+                scrollToIndex={selectedIndex}
                 list={list}
-                selected={selected}
+                selectedId={selectedId}
                 editingText={editingText}
               />
             )}
@@ -219,20 +227,18 @@ class TaskList extends React.Component {
   }
 }
 
-TaskList.propTypes = {
+ProjectTaskList.propTypes = {
   list: PropTypes.array.isRequired,
-  selected: PropTypes.number.isRequired,
-  defaultHeight: PropTypes.number.isRequired,
-  defaultWidth: PropTypes.number.isRequired,
+  selectedId: PropTypes.number,
   isEditing: PropTypes.bool.isRequired,
   isFetching: PropTypes.bool.isRequired,
 }
 
 const mapStateToProps = (state) => ({
-  list: getFilteredOrderedList(state),
-  selected: state.selected,
-  isEditing: state.isEditing,
-  isFetching: state.isFetching,
+  list: getTaskListFilteredOrderedList(state),
+  selectedId: getTaskListSelectedId(state),
+  isEditing: getTaskListIsEditing(state),
+  isFetching: getTaskListIsFetching(state),
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -246,4 +252,4 @@ const mapDispatchToProps = (dispatch) => ({
   onItemDelete: (id) => dispatch(deleteItem(id)),
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(TaskList)
+export default connect(mapStateToProps, mapDispatchToProps)(ProjectTaskList)

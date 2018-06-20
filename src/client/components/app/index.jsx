@@ -7,25 +7,39 @@ fontawesome.library.add(faPlus, faEdit, faTrash, faCheck, faTimes, faSearch,
   faTimesCircle)
 
 import React from 'react'
-import { Provider, connect } from 'react-redux'
+import { Redirect, Route, Switch }from 'react-router-dom'
 
-import shortcuts from './shortcuts'
-import DocumentShortcuts from 'client/components/common/document-shortcuts'
-import TaskList from 'client/components/task-list'
+import ProjectTaskListPage from 'client/components/project-task-list-page'
+import ProjectListPage from 'client/components/project-list-page'
+import NotFoundPage from 'client/components/not-found-page'
 
-import './index.scss'
+const Home = () => <div>Home</div>
+const Projects = () => <div>Projects</div>
+const Tasks = () => <div>Tasks</div>
 
-const AppDocumentShortcuts = connect()(DocumentShortcuts)
 const App = () => (
-  <AppDocumentShortcuts
-    shortcuts={shortcuts}
-    isPreventKeyboardScroll={true}
-  >
-    <TaskList
-      defaultHeight={100}
-      defaultWidth={500}
-    />
-  </AppDocumentShortcuts>
+  <Switch>
+    <Route exact path="/" render={() => (
+      <Redirect to="/projects" />
+    )} />
+    <Route exact path="/projects" render={() => (
+      <ProjectListPage />
+    )} />
+    <Route exact path="/projects/:projectSlug" render={({ match }) => (
+      <Redirect to={`/projects/${match.params.projectSlug}/tasks`} />
+    )} />
+    <Route exact path="/projects/:projectSlug/tasks" render={({ match }) => (
+      <ProjectTaskListPage />
+    )} />
+    <Route exact path="/projects/:projectSlug/tasks/:taskId" render={({ match }) => (
+      `Task ${match.params.taskId} for project ${match.params.projectSlug}`
+    )} />
+    <Route exact path="/404" render={() => (
+      <NotFoundPage />
+    )} />
+    <Route render={() => (
+      <Redirect to="/404" />
+    )} />
+  </Switch>
 )
-
 export default App

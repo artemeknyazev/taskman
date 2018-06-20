@@ -35,6 +35,7 @@ const TaskItem = ({
       'task-item--editing': isEditing,
     })}
     data-task-item-id={id}
+    onMouseDown={(ev) => ev.stopPropagation()}
     onClick={(ev) => onItemClick && onItemClick(ev) && ev.stopPropagation()}
   >
     <TaskItemHandle />

@@ -1,11 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 
 class DocumentShortcuts extends React.Component {
   constructor(props) {
     super(props)
     this.state = { alt: false, control: false, meta: false, shift: false }
     this.processEvent = this.processEvent.bind(this)
+    this.processShortcut = this.processShortcut.bind(this)
   }
 
   componentDidMount() {
@@ -50,7 +53,17 @@ class DocumentShortcuts extends React.Component {
         (isEditableTarget ? shortcut.allowOnEditableTarget : true) &&
         shortcut.check(key, this.state)
       )
-        return shortcut.callback(this.props.dispatch)
+        return shortcut.callback(
+          this.props.dispatch,
+          // HACK: hack to reroute in a shortcut callback instead of a dispatched action
+          // TODO: use connected-react-router (though there's no SSR)?
+          this.props.state,
+          {
+            match: this.props.match,
+            location: this.props.location,
+            history: this.props.history,
+          },
+        )
   }
 
   render() {
@@ -63,6 +76,8 @@ DocumentShortcuts.displayName = 'DocumentShortcuts'
 DocumentShortcuts.defaultProps = {
   shortcuts: [],
   dispatch: () => undefined,
+  state: null,
+  history: null,
   isPreventKeyboardScroll: false,
 }
 
@@ -75,7 +90,13 @@ DocumentShortcuts.propTypes = {
     }).isRequired
   ),
   dispatch: PropTypes.func,
+  history: PropTypes.object,
+  state: PropTypes.object,
   isPreventKeyboardScroll: PropTypes.bool,
 }
 
-export default DocumentShortcuts
+const mapStateToProps = (state) => ({
+  state,
+})
+
+export default withRouter(connect(mapStateToProps)(DocumentShortcuts))

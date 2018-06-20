@@ -5,6 +5,7 @@ import bodyParser from 'body-parser'
 import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { Provider } from 'react-redux'
+import { StaticRouter } from 'react-router-dom'
 
 import configureStore from 'client/store'
 import { appInit } from 'client/reducers'
@@ -33,20 +34,31 @@ app.use('/', routes)
 
 app.get('*', (req, res) => {
   const store = configureStore()
+  const context = {}
   const markup = (
     <Provider store={store}>
-      <App />
+      <StaticRouter
+        location={req.url}
+        context={context}
+      >
+        <App />
+      </StaticRouter>
     </Provider>
   )
   store.dispatch(
     appInit()
-  ).then(() =>
-    res.send(indexHtml({
-      title: "Taskman",
-      content: renderToString(markup),
-      initialState: store.getState(),
-    }))
-  )
+  ).then(() => {
+    const content = renderToString(markup)
+    if (context.url) {
+      res.redirect(301, context.url)
+    } else {
+      res.send(indexHtml({
+        title: "Taskman",
+        content,
+        initialState: store.getState(),
+      }))
+    }
+  })
 })
 
 const server = app.listen(port, () => {

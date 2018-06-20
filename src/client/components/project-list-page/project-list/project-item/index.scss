@@ -1,0 +1,31 @@
+// TODO: refactor list styles into a separate stylesheet; maybe new component?
+.project-item {
+  background-color: #fcfbfa;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 1px 1px;
+  display: flex;
+  flex-flow: row nowrap;
+  padding: 0 2em;
+
+  .project-item__name-container {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    font-size: .8em;
+    justify-content: center;
+    height: 100%;
+    min-width: 0;
+    padding-top: .2em;
+
+    .project-item__name {
+      display: inline-block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 1.6;
+    }
+  }
+
+  &.project-item--selected {
+    background-color: #fdf9f9;
+  }
+}

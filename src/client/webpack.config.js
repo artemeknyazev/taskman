@@ -10,19 +10,6 @@ module.exports = {
   name: 'client',
   mode: nodeEnv,
   devtool: 'inline-source-map',
-  optimization: {
-    splitChunks: {
-      cacheGroups: {
-        // extract styles into a separate file
-        styles: {
-          name: 'styles',
-          test: /\.css$/,
-          chunks: 'all',
-          enforce: true,
-        }
-      }
-    }
-  },
   plugins: [
     new MiniCssExtractPlugin({
       filename: 'bundle.css',
