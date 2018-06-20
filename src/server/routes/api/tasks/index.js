@@ -1,4 +1,6 @@
 import { Router } from 'express'
+import cors from 'cors'
+import { httpOrigin } from 'server/common'
 import {
   prepareFilter,
   getTasks,
@@ -11,6 +13,14 @@ import {
 // TODO: check response statuses
 // TODO: api-specific error handlers
 let router = Router()
+
+const corsOptions = {
+  origin: httpOrigin,
+  methods: 'GET,POST,PUT,DELETE,OPTIONS',
+}
+
+router.use(cors(corsOptions))
+router.options('*', cors(corsOptions))
 
 router.get('/', (req, res) => {
   const { offset, limit, ...filter } = req.query

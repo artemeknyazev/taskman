@@ -1,6 +1,7 @@
 import path from 'path'
 import express from 'express'
 import bodyParser from 'body-parser'
+import { domain, port } from 'server/common'
 
 import React from 'react'
 import { renderToString } from 'react-dom/server'
@@ -13,8 +14,6 @@ import App from 'client/components/app'
 
 import routes from 'server/routes'
 import indexHtml from './index-html'
-
-const port = process.env.PORT || 8080
 
 // TODO: add global and api error handling
 let app = express()
@@ -56,6 +55,8 @@ app.get('*', (req, res) => {
         title: "Taskman",
         content,
         initialState: store.getState(),
+        domain,
+        port,
       }))
     }
   })

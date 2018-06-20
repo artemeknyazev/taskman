@@ -299,7 +299,7 @@ export default (
 
     case DELETE_ITEM: {
       if (action.result) {
-        const { filter, selectedId, orderedIds, filteredOrderedIds, allIds, byId } = state
+        const { selectedId, orderedIds, filteredOrderedIds, allIds, byId } = state
         const newAllIds = allIds.slice()
         newAllIds.splice(newAllIds.indexOf(action.id), 1)
         let newById = newAllIds.reduce((newById, id) =>
@@ -308,12 +308,17 @@ export default (
         newOrderedIds.splice(newOrderedIds.indexOf(action.id), 1)
         let newFilteredOrderedIds = filteredOrderedIds
         let newSelectedId = selectedId
-        const selectedIndex = filteredOrderedIds.indexOf(selectedId)
-        if (selectedIndex !== -1) {
-          newFilteredOrderedIds = [ ...filteredOrderedIds ]
-          newFilteredOrderedIds.splice(selectedIndex, 1)
+        const selectedIndex = newFilteredOrderedIds.indexOf(selectedId)
+        let deletedIndex = newFilteredOrderedIds.indexOf(action.id)
+        if (deletedIndex !== -1) {
+          newFilteredOrderedIds = [
+            ...newFilteredOrderedIds.slice(0, deletedIndex),
+            ...newFilteredOrderedIds.slice(deletedIndex + 1),
+          ]
+        }
+        if (selectedId === action.id) {
           newSelectedId = newFilteredOrderedIds.length
-            ? newFilteredOrderedIds[clamp(selectedIndex + 1, 0, newFilteredOrderedIds.length - 1)]
+            ? newFilteredOrderedIds[clamp(selectedIndex, 0, newFilteredOrderedIds.length - 1)]
             : null
         }
         return {

@@ -4,6 +4,8 @@ import tasks from './tasks'
 
 let router = Router()
 
+// NOTE: cors options are route-specific because different
+// routes accept different methods
 router.use('/tasks', tasks)
 router.use('/projects', projects)
 
