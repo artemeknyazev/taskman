@@ -2,15 +2,15 @@ import validate from 'validate.js'
 import { sanitize } from 'sanitizer'
 import { parseBoolean } from 'utils'
 import db from './db'
-import { getProject } from './projects'
+import { getProjectById } from './projects'
 
 // TODO: should there be an option to allow empty, or use presence
-validate.validators.projectIdValidator = (value) =>
+validate.validators.projectIdValidator = (id) =>
   new validate.Promise((resolve) => {
-    if (!value) resolve()
-    getProject(value).then(
+    if (!id) resolve()
+    getProjectById(id).then(
       () => resolve(),
-      () => resolve(`can\'t find project by id ${value}`)
+      () => resolve(`can\'t find project by id ${id}`)
     )
   })
 
@@ -136,19 +136,27 @@ export const getTasks = (
 })
 
 export const getTask = (
-  id
+  filter
 ) => new Promise((resolve, reject) => {
   const collection = db.get('tasks.collection')
-    .filter({
-      id,
-      status: 'active',
-    })
+    .filter(prepareFilterPred(filter))
     .value()
   if (collection.length)
     resolve(collection[0])
   else
     reject()
 })
+
+export const getTaskById = (
+  id
+) =>
+  getTask({ id })
+
+export const getTaskByIdAndProjectId = (
+  id,
+  projectId,
+) =>
+  getTask({ id, projectId })
 
 export const addTask = (
   data

@@ -4,7 +4,7 @@ import { httpOrigin } from 'server/common'
 import {
   prepareFilter,
   getTasks,
-  getTask,
+  getTaskById,
   addTask,
   editTask,
   deleteTask,
@@ -61,7 +61,7 @@ router.post('/', (req, res) => {
 
 router.get('/:id', (req, res) => {
   const id = req.params.id.toString()
-  getTask(id).then(
+  getTaskById(id).then(
     result => {
       res.status(200)
       res.set({ 'Content-Type': 'application/json' })
@@ -81,7 +81,7 @@ router.get('/:id', (req, res) => {
 
 router.put('/:id', (req, res) => {
   const id = req.params.id.toString()
-  getTask(id).then(
+  getTaskById(id).then(
     () => {
       editTask(id, req.body.data || {}).then(
         result => {
@@ -113,7 +113,7 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   const id = req.params.id.toString()
-  getTask(id).then(
+  getTaskById(id).then(
     () => {
       deleteTask(id).then(() => {
         res.status(200)

@@ -33,7 +33,7 @@ export const getTasks = (
     '/tasks?' + prepareFilterQuery(filter, offset, limit),
   )
 
-export const getTask = (
+export const getTaskById = (
   id
 ) =>
   apiGet(
@@ -48,7 +48,7 @@ export const addTask = (
     { data }
   )
 
-export const editTask = (
+export const editTaskById = (
   id,
   data,
 ) =>
@@ -57,7 +57,7 @@ export const editTask = (
     { data }
   )
 
-export const deleteTask = (
+export const deleteTaskById = (
   id
 ) =>
   apiDelete(

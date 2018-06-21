@@ -3,8 +3,8 @@ import { clamp, sortItemsByField } from 'utils'
 import {
   getTasks,
   addTask,
-  editTask,
-  deleteTask,
+  editTaskById,
+  deleteTaskById,
 } from 'client/api/tasks'
 import {
   getTaskList,
@@ -123,7 +123,7 @@ const deleteItemAction = (projectId, id, error, result) => ({
 export const deleteItem = (projectId, id) =>
   (dispatch) => {
     dispatch(deleteItemAction(projectId, id))
-    return deleteTask(id).then(
+    return deleteTaskById(id).then(
       ({ result }) => dispatch(deleteItemAction(projectId, id, null, result)),
       ({ error }) => dispatch(deleteItemAction(projectId, id, error)),
     )
@@ -174,7 +174,7 @@ const editItemAction = (projectId, id, data, error, result) => ({
 export const editItem = (projectId, id, data = {}) =>
   (dispatch) => {
     dispatch(editItemAction(projectId, id, data))
-    return editTask(id, data).then(
+    return editTaskById(id, data).then(
       ({ result }) => dispatch(editItemAction(projectId, id, data, null, result)),
       ({ error }) => dispatch(editItemAction(projectId, id, data, error)),
     )
