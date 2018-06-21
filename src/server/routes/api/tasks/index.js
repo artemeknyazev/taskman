@@ -41,6 +41,7 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
   addTask(req.body.data || {}).then(
     result => {
+      console.log('result', result)
       res.status(200)
       res.set({ 'Content-Type': 'application/json' })
       res.json({
@@ -48,6 +49,7 @@ router.post('/', (req, res) => {
       })
     },
     error => {
+      console.log('error', error)
       res.status(422)
       res.set({ 'Content-Type': 'application/json' })
       res.json({
@@ -58,7 +60,7 @@ router.post('/', (req, res) => {
 })
 
 router.get('/:id', (req, res) => {
-  const id = parseInt(req.params.id)
+  const id = req.params.id.toString()
   getTask(id).then(
     result => {
       res.status(200)
@@ -78,7 +80,7 @@ router.get('/:id', (req, res) => {
 })
 
 router.put('/:id', (req, res) => {
-  const id = parseInt(req.params.id)
+  const id = req.params.id.toString()
   getTask(id).then(
     () => {
       editTask(id, req.body.data || {}).then(
@@ -90,6 +92,7 @@ router.put('/:id', (req, res) => {
           })
         },
         error => {
+          console.log('error', error)
           res.status(422)
           res.set({ 'Content-Type': 'application/json' })
           res.json({
@@ -109,7 +112,7 @@ router.put('/:id', (req, res) => {
 })
 
 router.delete('/:id', (req, res) => {
-  const id = parseInt(req.params.id)
+  const id = req.params.id.toString()
   getTask(id).then(
     () => {
       deleteTask(id).then(() => {

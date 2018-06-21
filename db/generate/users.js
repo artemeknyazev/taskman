@@ -6,7 +6,7 @@ const generate = (userCount = 1) =>
   .then(res => res.json())
   .then(({ results }) =>
     results.map((data, index) => ({
-      id: index,
+      id: index.toString(),
       login: data.login.username,
       email: data.email,
       fullName: capitalize(data.name.first) + ' ' + capitalize(data.name.last),

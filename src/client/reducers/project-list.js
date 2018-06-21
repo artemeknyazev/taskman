@@ -128,3 +128,6 @@ export const getSelectedId = (state) =>
 
 export const getIsFetching = (state) =>
   state.isFetching
+
+export const getProjectIdByProjectSlug = (slug, state) =>
+  state.allIds.find(id => state.byId[id].slug === slug)

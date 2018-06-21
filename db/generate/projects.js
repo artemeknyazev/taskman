@@ -39,7 +39,7 @@ const generate = (projectCount) => {
       (Math.random() > 0.5 ? randomFromArray(separator) +
         randomFromArray(suffix).toUpperCase() : '')
     result.push({
-      id: i,
+      id: i.toString(),
       name,
       slug: prepareSlug(name),
       //status: Math.random() < 0.95 ? 'active' : 'inactive',

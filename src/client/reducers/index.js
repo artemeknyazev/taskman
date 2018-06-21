@@ -34,18 +34,28 @@ export const getProjectListSelectedId = (state) =>
 export const getProjectListIsFetching = (state) =>
   ProjectList.getIsFetching(getProjectList(state))
 
+export const getProjectIdByProjectSlug = (slug, state) =>
+  ProjectList.getProjectIdByProjectSlug(slug, getProjectList(state))
+
+export const getCurrentProjectId = (state) => {
+  const { pathname } = state.router.location
+  const matched = pathname.match(/^\/projects\/([^\/]+)/)
+  if (!matched) return null
+  return getProjectIdByProjectSlug(matched[1], state)
+}
+
 // TaskList
 export const getTaskList = (state) =>
   state.taskList
 
-export const getTaskListFilteredOrderedList = (state) =>
-  TaskList.getFilteredOrderedList(getTaskList(state))
+export const getTaskListFilteredOrderedListByProjectId = (projectId, state) =>
+  TaskList.getFilteredOrderedListByProjectId(projectId, getTaskList(state))
 
-export const getTaskListSelectedId = (state) =>
-  TaskList.getSelectedId(getTaskList(state))
+export const getTaskListSelectedIdByProjectId = (projectId, state) =>
+  TaskList.getSelectedIdByProjectId(projectId, getTaskList(state))
 
-export const getTaskListIsEditing = (state) =>
-  TaskList.getIsEditing(getTaskList(state))
+export const getTaskListIsEditingByProjectId = (projectId, state) =>
+  TaskList.getIsEditingByProjectId(projectId, getTaskList(state))
 
-export const getTaskListIsFetching = (state) =>
-  TaskList.getIsFetching(getTaskList(state))
+export const getTaskListIsFetchingByProjectId = (projectId, state) =>
+  TaskList.getIsFetchingByProjectId(projectId, getTaskList(state))

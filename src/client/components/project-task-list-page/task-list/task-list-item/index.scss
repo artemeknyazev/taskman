@@ -1,17 +1,17 @@
-.task-item {
+.task-list-item {
   background-color: #fcfbfa;
   box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 1px 1px;
   display: flex;
   flex-flow: row nowrap;
   padding: 0 0.6em;
 
-  .task-item__handle {
+  .task-list-item__handle {
     flex: 0 0 auto;
     margin-right: 0.6em;
     padding: 0.6em 0;
     visibility: hidden;
   }
-  .task-item__id-container {
+  .task-list-item__id-container {
     display: flex;
     flex: 0 0 auto;
     flex-direction: column;
@@ -21,7 +21,7 @@
     min-width: 0;
     padding-top: .2em;
 
-    .task-item__id {
+    .task-list-item__id {
       &:before {
         content: '#'
       }
@@ -30,7 +30,7 @@
       }
     }
   }
-  .task-item__text-container {
+  .task-list-item__text-container {
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
@@ -39,8 +39,8 @@
     min-width: 0;
     padding-top: .2em;
 
-    .task-item__input,
-    .task-item__text {
+    .task-list-item__input,
+    .task-list-item__text {
       display: inline-block;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -48,14 +48,14 @@
       line-height: 1.6;
     }
   }
-  .task-item__controls-container {
+  .task-list-item__controls-container {
     display: flex;
     flex: 0 0 auto;
     min-width: 0;
     padding-top: .25em;
     visibility: hidden;
 
-    .task-item__control-button {
+    .task-list-item__control-button {
       border-radius: 1.225em;
       display: inline-block;
       margin-left: 0.5em;
@@ -63,42 +63,42 @@
       width: 2.5em;
     }
 
-    .task-item__add-after-button,
-    .task-item__edit-button,
-    .task-item__delete-button,
-    .task-item__apply-button,
-    .task-item__cancel-button {
+    .task-list-item__add-after-button,
+    .task-list-item__edit-button,
+    .task-list-item__delete-button,
+    .task-list-item__apply-button,
+    .task-list-item__cancel-button {
       display: inline-block;
     }
-    .task-item__apply-button,
-    .task-item__cancel-button {
+    .task-list-item__apply-button,
+    .task-list-item__cancel-button {
       display: none;
     }
   }
 
-  &.task-item--selected {
+  &.task-list-item--selected {
     background-color: #fdf9f9;
   }
   &:hover {
-    .task-item__handle {
+    .task-list-item__handle {
       visibility: visible;
     }
-    .task-item__controls-container {
+    .task-list-item__controls-container {
       visibility: visible;
     }
   }
-  &.task-item--editing {
-    .task-item__handle {
+  &.task-list-item--editing {
+    .task-list-item__handle {
       visibility: hidden;
     }
-    .task-item__controls-container {
-      .task-item__apply-button,
-      .task-item__cancel-button {
+    .task-list-item__controls-container {
+      .task-list-item__apply-button,
+      .task-list-item__cancel-button {
         display: flex;
       }
-      .task-item__add-after-button,
-      .task-item__edit-button,
-      .task-item__delete-button {
+      .task-list-item__add-after-button,
+      .task-list-item__edit-button,
+      .task-list-item__delete-button {
         display: none;
       }
     }

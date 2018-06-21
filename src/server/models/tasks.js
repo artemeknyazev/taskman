@@ -1,7 +1,18 @@
 import validate from 'validate.js'
 import { sanitize } from 'sanitizer'
 import { parseBoolean } from 'utils'
-import db from './db.js'
+import db from './db'
+import { getProject } from './projects'
+
+// TODO: should there be an option to allow empty, or use presence
+validate.validators.projectIdValidator = (value) =>
+  new validate.Promise((resolve) => {
+    if (!value) resolve()
+    getProject(value).then(
+      () => resolve(),
+      () => resolve(`can\'t find project by id ${value}`)
+    )
+  })
 
 const textConstraint = {
   length: { minimum: 1, message: 'message can\'t be empty' }
@@ -9,31 +20,39 @@ const textConstraint = {
 const completedConstraint = {
   inclusion: [ "true", "false", "1", "0", 1, 0, true, false ]
 }
+const projectIdConstraint = {
+  projectIdValidator: true,
+}
 
 const addConstraint = {
   text: { ...textConstraint, presence: true },
   completed: { ...completedConstraint, presence: true },
   order: { presence: true },
+  projectId: { ...projectIdConstraint, presence: true },
 }
 const editConstraint = {
   text: { ...textConstraint },
   completed: { ...completedConstraint },
+  projectId: { ...projectIdConstraint },
 }
 
 export const prepareFilter = ({
   q,
   completed,
+  projectId,
 }) => {
   let filter = {}
   if (q !== undefined) {
     const match = q.match(/^#(\d+)$/)
     if (match)
-      filter.id = parseInt(match[1].trim())
+      filter.id = match[1].trim()
     else
       filter.text = sanitize(q.trim())
   }
   if (completed !== undefined)
     filter.completed = parseBoolean(completed)
+  if (projectId !== undefined)
+    filter.projectId = projectId
   return filter
 }
 
@@ -41,6 +60,7 @@ export const prepareFilterPred = ({
   id,
   text,
   completed,
+  projectId,
 }) => (item) => {
   let result = item.status === 'active'
   if (id !== undefined)
@@ -49,13 +69,15 @@ export const prepareFilterPred = ({
     result = result && item.text.includes(text)
   if (completed !== undefined)
     result = result && item.completed === completed
+  if (projectId !== undefined)
+    result = result && item.projectId === projectId
   return result
 }
 
 const prepareBeforeValidate = (data) =>
   Object.keys(data).reduce((acc, key) => {
     if (typeof data[key] === 'string')
-      acc[key] = data[key].trim()
+      acc[key] = sanitize(data[key].trim())
     else
       acc[key] = data[key]
     return acc
@@ -69,6 +91,7 @@ const prepareForAdd = (
     text: sanitize(data.text.trim()),
     completed: parseBoolean(data.completed),
     order: parseFloat(data.order),
+    projectId: sanitize(data.projectId.trim()),
     status: 'active',
     createdAt: now,
     updatedAt: now,
@@ -87,6 +110,8 @@ const prepareForEdit = (
     result.completed = parseBoolean(data.completed)
   if (data.hasOwnProperty('order'))
     result.order = parseFloat(data.order)
+  if (data.hasOwnProperty('projectId'))
+    result.projectId = sanitize(data.projectId.trim())
   return result
 }
 
@@ -136,7 +161,7 @@ export const addTask = (
       const id = db.get('tasks.maxId').value() + 1
       db.set('tasks.maxId', id).write()
       data = prepareForAdd(data)
-      data.id = id
+      data.id = id.toString()
       const collection = db.get('tasks.collection')
         .push(data)
         .write()

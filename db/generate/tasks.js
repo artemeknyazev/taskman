@@ -31,12 +31,12 @@ const generate = (taskCount, projectCount, userCount) => {
     const createdAt = Math.floor(now + (Math.random() - 1) * 100000)
     const updatedAt = Math.floor(createdAt + Math.random() * 100000)
     result.push({
-      id: i,
+      id: i.toString(),
       text: capitalize(randomFromArray(actions)) + ' ' + randomFromArray(objects),
       completed: Math.random() > 0.5,
       order: i,
-      projectId: Math.ceil(Math.random() * projectCount),
-      userId: Math.ceil(Math.random() * userCount),
+      projectId: Math.ceil(Math.random() * projectCount).toString(),
+      userId: Math.ceil(Math.random() * userCount).toString(),
       //status: Math.random() < 0.95 ? 'active' : 'inactive',
       status: 'active',
       createdAt,

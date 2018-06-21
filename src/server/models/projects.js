@@ -1,4 +1,4 @@
-import db from './db.js'
+import db from './db'
 
 export const getProjects = (
   filter = {},
@@ -17,4 +17,19 @@ export const getProjects = (
     limit,
     collection: collection.slice(offset, offset + limit)
   })
+})
+
+export const getProject = (
+  id
+) => new Promise((resolve, reject) => {
+  const collection = db.get('projects.collection')
+    .filter({
+      id,
+      status: 'active',
+    })
+    .value()
+  if (collection.length)
+    resolve(collection[0])
+  else
+    reject()
 })

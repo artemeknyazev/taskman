@@ -29,8 +29,8 @@ const TaskListFilter = ({
         className="task-list-filter__input"
         inputRef={inputRef}
         value={query}
-        onChange={onChange}
-        onKeyUp={onKeyUp}
+        onChange={(ev) => onChange && onChange(ev.target.value)}
+        onKeyUp={(ev) => onKeyUp && onKeyUp(ev.nativeEvent.key)}
         placeholder="Search tasks"
       />
     </div>
@@ -39,7 +39,7 @@ const TaskListFilter = ({
         className="task-list-filter__clear-filter-button task-list-filter__control-button"
         icon="times-circle"
         tooltip="Clear filter"
-        onClick={onClear}
+        onClick={(ev) => onClear() && ev.preventDefault()}
       />
     </div>
   </div>

@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 
-import { clearSelection } from 'client/reducers/task-list'
+import { clearSelectionInCurrentProject } from 'client/reducers/task-list'
 import shortcuts from './shortcuts'
 import DocumentShortcuts from 'client/components/common/document-shortcuts'
 import TaskList from './task-list'
@@ -13,7 +13,7 @@ class ProjectTaskListPage extends React.PureComponent {
   }
 
   _clearSelection() {
-    this.props.dispatch(clearSelection())
+    this.props.dispatch(clearSelectionInCurrentProject())
   }
 
   componentDidMount() {

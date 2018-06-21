@@ -7,7 +7,6 @@ import './index.scss'
 const ProjectItem = ({
   id,
   name,
-  slug,
   isSelected,
   onClick,
   onOpen,
@@ -17,7 +16,7 @@ const ProjectItem = ({
       'project-item': true,
       'project-item--selected': isSelected,
     })}
-    onClick={(ev) => onClick(id) && ev.stopPropagation()}
+    onClick={(ev) => onClick && onClick(id) && ev.stopPropagation()}
   >
     <div className="project-item__name-container">
       <span className="project-item__name">
@@ -29,7 +28,7 @@ const ProjectItem = ({
           className="project-item__open-button project-item__control-button fa-button--circle"
           icon="door-open"
           tooltip="Open project"
-          onClick={(ev) => onOpen(id) && ev.stopPropagation()}
+          onClick={(ev) => onOpen && onOpen(id) && ev.stopPropagation()}
         />
     </div>
   </div>
@@ -38,8 +37,7 @@ const ProjectItem = ({
 ProjectItem.displayName = 'ProjectItem'
 
 ProjectItem.propTypes = {
-  id: PropTypes.number.isRequired,
-  slug: PropTypes.string.isRequired,
+  id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   isSelected: PropTypes.bool.isRequired,
   onClick: PropTypes.func.isRequired,

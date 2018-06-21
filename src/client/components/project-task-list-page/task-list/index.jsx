@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 import { AutoSizer, List } from 'react-virtualized'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 import { debounce } from 'lodash'
@@ -11,21 +12,22 @@ import {
   stopEditing,
   editItem,
   deleteItem,
-  addItemAfterIndex,
+  addItemAfter,
   setFilter,
 } from 'client/reducers/task-list'
 import {
-  getTaskListFilteredOrderedList,
-  getTaskListSelectedId,
-  getTaskListIsEditing,
-  getTaskListIsFetching,
+  getTaskListFilteredOrderedListByProjectId,
+  getTaskListSelectedIdByProjectId,
+  getTaskListIsEditingByProjectId,
+  getTaskListIsFetchingByProjectId,
+  getCurrentProjectId,
 } from 'client/reducers'
-import TaskItem from './task-item'
+import TaskListItem from './task-list-item'
 import TaskListFilter from './task-list-filter'
 
 import './index.scss'
 
-const SortableTaskItem = SortableElement(TaskItem)
+const SortableTaskListItem = SortableElement(TaskListItem)
 const SortableTaskList = SortableContainer(List)
 
 class ProjectTaskList extends React.Component {
@@ -45,8 +47,12 @@ class ProjectTaskList extends React.Component {
     this._onFilterKeyUp = this._onFilterKeyUp.bind(this)
     this._onFilterClear = this._onFilterClear.bind(this)
     this._onFilterApply = debounce(this._onFilterApply.bind(this), 300)
+    this._onItemSelect = this._onItemSelect.bind(this)
+    this._onItemAddAfter = this._onItemAddAfter.bind(this)
+    this._onItemDelete = this._onItemDelete.bind(this)
     this._onItemTextChange = this._onItemTextChange.bind(this)
     this._onItemTextKeyUp = this._onItemTextKeyUp.bind(this)
+    this._onItemStartEditing = this._onItemStartEditing.bind(this)
     this._onItemCancelChanges = this._onItemCancelChanges.bind(this)
     this._onItemApplyChanges = this._onItemApplyChanges.bind(this)
     this._renderEmpty = this._renderEmpty.bind(this)
@@ -78,8 +84,32 @@ class ProjectTaskList extends React.Component {
       this._itemInputRef.current.focus()
   }
 
-  _onItemTextChange(ev) {
-    this.setState({ editingText: ev.target.value })
+  _onItemSelect(projectId, id) {
+    this.props.onItemSelect(projectId, id)
+  }
+
+  _onItemAddAfter(projectId, id) {
+    this.props.onItemAddAfter(projectId, id)
+  }
+
+  _onItemDelete(projectId, id) {
+    this.props.onItemDelete(projectId, id)
+  }
+
+  _onItemTextChange(text) {
+    this.setState({ editingText: text })
+  }
+
+  _onItemTextKeyUp(key) {
+    if (key === 'Escape') {
+      this._onItemCancelChanges()
+    } else if (key === 'Enter') {
+      this._onItemApplyChanges()
+    }
+  }
+
+  _onItemStartEditing(projectId, id) {
+    this.props.onItemStartEditing(projectId, id)
   }
 
   _onItemCancelChanges() {
@@ -88,16 +118,8 @@ class ProjectTaskList extends React.Component {
 
   _onItemApplyChanges() {
     const { editingText } = this.state
-    const { selectedId } = this.props
-    this.props.onItemEditFinished(selectedId, { text: editingText })
-  }
-
-  _onItemTextKeyUp(ev) {
-    if (ev.nativeEvent.key === 'Escape') {
-      this._onItemCancelChanges()
-    } else if (ev.nativeEvent.key === 'Enter') {
-      this._onItemApplyChanges()
-    }
+    const { projectId, selectedId } = this.props
+    this.props.onItemEditFinished(projectId, selectedId, { text: editingText })
   }
 
   _renderEmpty() {
@@ -115,18 +137,16 @@ class ProjectTaskList extends React.Component {
 
   // TODO: check why selecting an item and then scrolling is laggy in Safari
   _renderRow({ index, key, style, isScrolling }) {
-    const {
-      list, selectedId,
-      onItemSelect, onItemDelete, onItemStartEditing, onItemAddAfter,
-    } = this.props
+    const { list, selectedId } = this.props
     const { isEditing, editingText } = this.state
-    const { id, text } = list[index]
+    const { id, projectId, text } = list[index]
     const isItemSelected = selectedId === id
     const isItemEditing = isItemSelected && isEditing
     const elem = (
-      <SortableTaskItem
+      <SortableTaskListItem
         index={index}
         id={id}
+        projectId={projectId}
         text={text}
         isSelected={isItemSelected}
         isEditing={isItemEditing}
@@ -134,19 +154,19 @@ class ProjectTaskList extends React.Component {
         inputRef={this._itemInputRef}
         onTextChange={this._onItemTextChange}
         onTextKeyUp={this._onItemTextKeyUp}
-        onItemAddAfter={() => onItemAddAfter(index)}
-        onItemClick={() => onItemSelect(id)}
-        onItemStartEditing={() => onItemStartEditing(id)}
+        onItemAddAfter={this._onItemAddAfter}
+        onItemClick={this._onItemSelect}
+        onItemStartEditing={this._onItemStartEditing}
         onItemCancelChanges={this._onItemCancelChanges}
         onItemApplyChanges={this._onItemApplyChanges}
-        onItemDelete={() => onItemDelete(id)}
+        onItemDelete={this._onItemDelete}
       />
     )
     return (
       <div
         key={key}
         style={style}
-        className="task-list__task-item-container noselect"
+        className="task-list__task-list-item-container noselect"
       >
         {elem}
       </div>
@@ -154,22 +174,19 @@ class ProjectTaskList extends React.Component {
   }
 
   _onSortEnd({ oldIndex, newIndex }) {
+    const { list, projectId } = this.props
     if (oldIndex !== newIndex)
-      this.props.onItemMoveTo(oldIndex, newIndex)
+      this.props.onItemMoveTo(projectId, list[oldIndex].id, list[newIndex].id)
   }
 
-  _onFilterChange(ev) {
-    this.setState({ query: ev.target.value }, this._onFilterApply)
+  _onFilterChange(query) {
+    this.setState({ query }, this._onFilterApply)
   }
 
-  _onFilterClear() {
-    this.setState({ query: '' }, this._onFilterApply)
-  }
-
-  _onFilterKeyUp(ev) {
-    if (ev.nativeEvent.key === 'Escape') {
+  _onFilterKeyUp(key) {
+    if (key === 'Escape') {
       this._filterInputRef.current.blur()
-    } else if (ev.nativeEvent.key === 'Enter') {
+    } else if (key === 'Enter') {
       this._onFilterApply()
       this._filterInputRef.current.blur()
       const { list } = this.props
@@ -178,8 +195,12 @@ class ProjectTaskList extends React.Component {
     }
   }
 
+  _onFilterClear() {
+    this.setState({ query: '' }, this._onFilterApply)
+  }
+
   _onFilterApply() {
-    this.props.onFilterApply(this.state.query)
+    this.props.onFilterApply(this.props.projectId, { query: this.state.query })
   }
 
   render() {
@@ -228,28 +249,41 @@ class ProjectTaskList extends React.Component {
 }
 
 ProjectTaskList.propTypes = {
+  projectId: PropTypes.string.isRequired,
   list: PropTypes.array.isRequired,
-  selectedId: PropTypes.number,
+  selectedId: PropTypes.string,
   isEditing: PropTypes.bool.isRequired,
   isFetching: PropTypes.bool.isRequired,
 }
 
-const mapStateToProps = (state) => ({
-  list: getTaskListFilteredOrderedList(state),
-  selectedId: getTaskListSelectedId(state),
-  isEditing: getTaskListIsEditing(state),
-  isFetching: getTaskListIsFetching(state),
-})
+const mapStateToProps = (state) => {
+  const projectId = getCurrentProjectId(state)
+  return {
+    projectId,
+    list: getTaskListFilteredOrderedListByProjectId(projectId, state),
+    selectedId: getTaskListSelectedIdByProjectId(projectId, state),
+    isEditing: getTaskListIsEditingByProjectId(projectId, state),
+    isFetching: getTaskListIsFetchingByProjectId(projectId, state),
+  }
+}
 
 const mapDispatchToProps = (dispatch) => ({
-  onFilterApply: (query) => dispatch(setFilter(query)),
-  onItemAddAfter: (index = null) => dispatch(addItemAfterIndex(index)),
-  onItemSelect: (index) => dispatch(setSelection(index)),
-  onItemMoveTo: (oldIndex, newIndex) => dispatch(moveItemTo(oldIndex, newIndex)),
-  onItemStartEditing: (id) => dispatch(itemStartEditing(id)),
-  onItemStopEditing: () => dispatch(stopEditing()),
-  onItemEditFinished: (id, data) => dispatch(editItem(id, data)),
-  onItemDelete: (id) => dispatch(deleteItem(id)),
+  onFilterApply: (projectId, filter) =>
+    dispatch(setFilter(projectId, filter)),
+  onItemAddAfter: (projectId, id) =>
+    dispatch(addItemAfter(projectId, id)),
+  onItemSelect: (projectId, id) =>
+    dispatch(setSelection(projectId, id)),
+  onItemMoveTo: (projectId, movingId, movedToId) =>
+    dispatch(moveItemTo(projectId, movingId, movedToId)),
+  onItemStartEditing: (projectId, id) =>
+    dispatch(itemStartEditing(projectId, id)),
+  onItemStopEditing: (projectId, id) =>
+    dispatch(stopEditing(projectId, id)),
+  onItemEditFinished: (projectId, id, data) =>
+    dispatch(editItem(projectId, id, data)),
+  onItemDelete: (projectId, id) =>
+    dispatch(deleteItem(projectId, id)),
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProjectTaskList)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ProjectTaskList))

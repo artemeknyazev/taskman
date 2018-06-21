@@ -30,7 +30,7 @@ class ProjectList extends React.Component {
   }
 
   _renderRow({ id, slug, name }, index) {
-    const { selectedProjectId } = this.props
+    const { selectedId } = this.props
     return (
       <div
         className="project-list__project-item-container"
@@ -38,9 +38,8 @@ class ProjectList extends React.Component {
       >
         <ProjectItem
           id={id}
-          slug={slug}
           name={name}
-          isSelected={id === selectedProjectId}
+          isSelected={id === selectedId}
           onClick={this._onItemClick}
           onOpen={this._onItemOpen}
         />
@@ -64,17 +63,17 @@ ProjectList.displayName = 'ProjectList'
 
 ProjectList.propTypes = {
   list: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    id: PropTypes.string.isRequired,
     slug: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
   }).isRequired).isRequired,
-  selectedProjectId: PropTypes.number,
+  selectedId: PropTypes.string,
 }
 
 const mapStateToProps = (state) => {
   return ({
     list: getProjectListOrderedList(state),
-    selectedProjectId: getProjectListSelectedId(state),
+    selectedId: getProjectListSelectedId(state),
     isFetching: getProjectListIsFetching(state),
   })
 }

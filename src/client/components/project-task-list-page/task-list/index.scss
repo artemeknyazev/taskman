@@ -11,12 +11,12 @@
   .task-list__list-container {
     flex: 1 1 auto;
 
-    .task-list__task-item-container {
+    .task-list__task-list-item-container {
       box-sizing: border-box;
       padding: .3em .4em 0;
       /* note: height is fixed in a react component */
 
-      .task-item {
+      .task-list-item {
         cursor: pointer;
       }
     }
