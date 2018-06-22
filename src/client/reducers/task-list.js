@@ -1,15 +1,12 @@
 import { uniq } from 'lodash'
 import { clamp, sortItemsByField } from 'utils'
 import {
-  getTasks,
-  addTask,
-  editTaskById,
-  deleteTaskById,
+  getTasksByProjectId,
+  addTaskByProjectId,
+  editTaskByIdAndProjectId,
+  deleteTaskByIdAndProjectId,
 } from 'client/api/tasks'
-import {
-  getTaskList,
-  getCurrentProjectId,
-} from './index'
+import * as Root from './index'
 
 const getOrderBetweenIndices = (beforeIndex, afterIndex, orderedIds, byId) => {
   if (beforeIndex < 0 && afterIndex >= 0)
@@ -47,24 +44,35 @@ const insertIntoOrderedList = (id, order, orderedIds, byId) => {
 
 const FETCH_TASKS = 'TASK_LIST/FETCH_TASKS'
 const fetchTasksAction = (
+  projectId,
   error = null,
   result = null,
 ) => ({
   type: FETCH_TASKS,
+  projectId,
   error,
   result,
 })
-export const fetchTasks = (
+export const fetchTasksByProject = (
+  projectId,
   filter = {},
   offset = undefined,
   limit = undefined,
 ) =>
   (dispatch) => {
-    dispatch(fetchTasksAction())
-    return getTasks(filter, offset, limit).then(
-      ({ result }) => dispatch(fetchTasksAction(null, result)),
-      ({ error }) => dispatch(fetchTasksAction(error))
+    dispatch(fetchTasksAction(projectId))
+    return getTasksByProjectId(projectId, filter, offset, limit).then(
+      ({ result }) => dispatch(fetchTasksAction(projectId, null, result)),
+      ({ error }) => dispatch(fetchTasksAction(projectId, error))
     )
+  }
+export const fetchTasksByProjectIfRequried = (
+  projectId
+) =>
+  (dispatch, getState) => {
+    if (Root.isRequiredToFetchTaskListByProject(projectId, getState()))
+      return dispatch(fetchTasksByProject(projectId))
+    return Promise.resolve()
   }
 
 const ADD_ITEM = 'TASK_LIST/ADD_ITEM'
@@ -77,7 +85,7 @@ export const addItemAction = (projectId, data, error, result) => ({
 })
 export const addItemAfter = (projectId, id = null) =>
   (dispatch, getState) => {
-    const { byId, orderedIds, filteredOrderedIds } = getProjectTasklist(projectId, getState())
+    const { byId, orderedIds, filteredOrderedIds } = Root.getTaskListDataByProjectId(projectId, getState())
     let data = {
       text: 'New task',
       completed: false,
@@ -92,7 +100,7 @@ export const addItemAfter = (projectId, id = null) =>
       data.order = getOrderBetweenIndices(orderedIndex, orderedIndex + 1, orderedIds, byId)
     }
     dispatch(addItemAction(projectId, data))
-    return addTask(data).then(
+    return addTaskByProjectId(projectId, data).then(
       ({ result }) => dispatch(addItemAction(projectId, data, null, result)),
       ({ error }) => dispatch(addItemAction(projectId, data, error)),
     )
@@ -100,8 +108,8 @@ export const addItemAfter = (projectId, id = null) =>
 export const addAfterSelectedItemInCurrentProject = () =>
   (dispatch, getState) => {
     const state = getState()
-    const projectId = getCurrentProjectId(state)
-    const { selectedId, filteredOrderedIds } = getProjectTasklist(projectId, state)
+    const projectId = Root.getCurrentProjectId(state)
+    const { selectedId, filteredOrderedIds } = Root.getTaskListDataByProjectId(projectId, state)
     return dispatch(addItemAfter(
       projectId,
       selectedId === null
@@ -123,7 +131,7 @@ const deleteItemAction = (projectId, id, error, result) => ({
 export const deleteItem = (projectId, id) =>
   (dispatch) => {
     dispatch(deleteItemAction(projectId, id))
-    return deleteTaskById(id).then(
+    return deleteTaskByIdAndProjectId(id, projectId).then(
       ({ result }) => dispatch(deleteItemAction(projectId, id, null, result)),
       ({ error }) => dispatch(deleteItemAction(projectId, id, error)),
     )
@@ -131,8 +139,8 @@ export const deleteItem = (projectId, id) =>
 export const deleteSelectedItemInCurrentProject = () =>
   (dispatch, getState) => {
     const state = getState()
-    const projectId = getCurrentProjectId(state)
-    const { selectedId } = getProjectTasklist(projectId, state)
+    const projectId = Root.getCurrentProjectId(state)
+    const { selectedId } = Root.getTaskListDataByProjectId(projectId, state)
     if (selectedId === null)
       return Promise.resolve()
     return dispatch(deleteItem(projectId, selectedId))
@@ -144,7 +152,7 @@ const START_SELECTED_ITEM_EDITING = 'TASK_LIST/START_SELECTED_ITEM_EDITING'
 export const startSelectedItemEditingInCurrentProject = () =>
   (dispatch, getState) => {
     const state = getState()
-    const projectId = getCurrentProjectId(state)
+    const projectId = Root.getCurrentProjectId(state)
     dispatch({
       type: START_SELECTED_ITEM_EDITING,
       projectId,
@@ -174,7 +182,7 @@ const editItemAction = (projectId, id, data, error, result) => ({
 export const editItem = (projectId, id, data = {}) =>
   (dispatch) => {
     dispatch(editItemAction(projectId, id, data))
-    return editTaskById(id, data).then(
+    return editTaskByIdAndProjectId(id, projectId, data).then(
       ({ result }) => dispatch(editItemAction(projectId, id, data, null, result)),
       ({ error }) => dispatch(editItemAction(projectId, id, data, error)),
     )
@@ -189,14 +197,14 @@ export const setSelection = (projectId, selectedId) => ({
 export const clearSelectionInCurrentProject = () =>
   (dispatch, getState) => {
     const state = getState()
-    const projectId = getCurrentProjectId(state)
+    const projectId = Root.getCurrentProjectId(state)
     return dispatch(setSelection(projectId, null))
   }
 export const moveSelectionUpInCurrentProject = () =>
   (dispatch, getState) => {
     const state = getState()
-    const projectId = getCurrentProjectId(state)
-    const { selectedId, filteredOrderedIds } = getProjectTasklist(projectId, state)
+    const projectId = Root.getCurrentProjectId(state)
+    const { selectedId, filteredOrderedIds } = Root.getTaskListDataByProjectId(projectId, state)
     if (filteredOrderedIds.length) {
       const index = filteredOrderedIds.indexOf(selectedId)
       if (index <= 0)
@@ -209,8 +217,8 @@ export const moveSelectionUpInCurrentProject = () =>
 export const moveSelectionDownInCurrentProject = () =>
   (dispatch, getState) => {
     const state = getState()
-    const projectId = getCurrentProjectId(state)
-    const { selectedId, filteredOrderedIds } = getProjectTasklist(projectId, state)
+    const projectId = Root.getCurrentProjectId(state)
+    const { selectedId, filteredOrderedIds } = Root.getTaskListDataByProjectId(projectId, state)
     if (filteredOrderedIds.length) {
       const index = filteredOrderedIds.indexOf(selectedId)
       if (index === -1 || index >= filteredOrderedIds.length - 1)
@@ -223,7 +231,7 @@ export const moveSelectionDownInCurrentProject = () =>
 
 export const moveItemTo = (projectId, movedId, movedToId) =>
   (dispatch, getState) => {
-    const { filteredOrderedIds, orderedIds, byId } = getProjectTasklist(projectId, getState())
+    const { filteredOrderedIds, orderedIds, byId } = Root.getTaskListDataByProjectId(projectId, getState())
     const oldIndex = filteredOrderedIds.indexOf(movedId)
     const newIndex = filteredOrderedIds.indexOf(movedToId)
     let orderedIndex = orderedIds.indexOf(movedToId)
@@ -242,8 +250,8 @@ export const moveItemTo = (projectId, movedId, movedToId) =>
 export const moveItemUpInCurrentProject = () =>
   (dispatch, getState) => {
     const state = getState()
-    const projectId = getCurrentProjectId(state)
-    const { filteredOrderedIds, selectedId } = getProjectTasklist(projectId, state)
+    const projectId = Root.getCurrentProjectId(state)
+    const { filteredOrderedIds, selectedId } = Root.getTaskListDataByProjectId(projectId, state)
     const index = filteredOrderedIds.indexOf(selectedId)
     if (index <= 0 || index >= filteredOrderedIds.length)
       return Promise.resolve()
@@ -252,8 +260,8 @@ export const moveItemUpInCurrentProject = () =>
 export const moveItemDownInCurrentProject = () =>
   (dispatch, getState) => {
     const state = getState()
-    const projectId = getCurrentProjectId(state)
-    const { filteredOrderedIds, selectedId } = getProjectTasklist(projectId, state)
+    const projectId = Root.getCurrentProjectId(state)
+    const { filteredOrderedIds, selectedId } = Root.getTaskListDataByProjectId(projectId, state)
     const index = filteredOrderedIds.indexOf(selectedId)
     if (index < 0 || index >= filteredOrderedIds.length - 1)
       return Promise.resolve()
@@ -275,7 +283,7 @@ export default (
   state = {
     isFetching: false,
     byProjectId: {},
-    allProjectIds: {},
+    allProjectIds: [],
   },
   action
 ) => {
@@ -318,50 +326,69 @@ export default (
 
     case FETCH_TASKS: {
       if (action.result) {
-        let byProjectId = {}
-        let allProjectIds = []
+        const { allProjectIds } = state
+        const newAllProjectIds = uniq([ ...allProjectIds, action.projectId ])
+        const filter = { query: '' }
+        const byId = {}
+        const allIds = []
         action.result.collection.forEach(item => {
-          const { id, projectId } = item
-          const byProject = (byProjectId[projectId] = byProjectId[projectId] || {
-            filter: { query: '' },
-            isEditing: false,
-            byId: {},
-            allIds: [],
-            orderedIds: [],
-            filteredOrderedIds: [],
-            selectedId: null,
-          })
-          allProjectIds.push(projectId)
-          byProject.byId[id] = item
-          byProject.allIds.push(id)
+          byId[item.id] = item
+          allIds.push(item.id)
         })
-        allProjectIds = uniq(allProjectIds)
-        allProjectIds.forEach(projectId => {
-          const byProject = byProjectId[projectId]
-          byProject.orderedIds =
-            sortItemsByField(byProject.allIds, byProject.byId, 'order')
-          byProject.filteredOrderedIds =
-            prepareFilteredOrderedIds(byProject.filter, byProject.orderedIds, byProject.byId)
-        })
+        const orderedIds =
+          sortItemsByField(allIds, byId, 'order')
+        const filteredOrderedIds =
+          prepareFilteredOrderedIds(filter, orderedIds, byId)
         return {
           ...state,
-          isFetching: false,
-          byProjectId,
-          allProjectIds,
+          allProjectIds: newAllProjectIds,
+          byProjectId: {
+            ...state.byProjectId,
+            [action.projectId]: {
+              ...state.byProjectId[action.projectId],
+              isFetching: false,
+              isEditing: false,
+              selectedId: null,
+              filter,
+              byId,
+              allIds,
+              orderedIds,
+              filteredOrderedIds,
+            }
+          }
         }
-      } else if (action.error)
-        return { ...state, isFetching: false }
-      else
-        return { ...state, isFetching: true }
+      } else if (action.error) {
+        return {
+          ...state,
+          byProjectId: {
+            ...state.byProjectId,
+            [action.projectId]: {
+              ...state.byProjectId[action.projectId],
+              isFetching: false,
+            }
+          }
+        }
+      } else {
+        return {
+          ...state,
+          byProjectId: {
+            ...state.byProjectId,
+            [action.projectId]: {
+              ...state.byProjectId[action.projectId],
+              isFetching: true,
+            }
+          }
+        }
+      }
     }
 
     case DELETE_ITEM: {
       if (action.result) {
         const { selectedId, byId, allIds, orderedIds, filteredOrderedIds } = state.byProjectId[action.projectId]
         const newAllIds = allIds.slice()
-        newAllIds.indexOf(newAllIds.indexOf(action.id), 1)
-        const newById = newAllIds.reduce((newByIdByProject, id) =>
-          (newByIdByProject[id] = byId[id], newByIdByProject), {})
+        newAllIds.splice(newAllIds.indexOf(action.id), 1)
+        const newById = newAllIds.reduce((newById, id) =>
+          (newById[id] = byId[id], newById), {})
         const newOrderedIds = orderedIds.slice()
         newOrderedIds.splice(newOrderedIds.indexOf(action.id), 1)
         let newFilteredOrderedIds = filteredOrderedIds
@@ -388,7 +415,7 @@ export default (
               selectedId: newSelectedId,
               byId: newById,
               allIds: newAllIds,
-              orderedIdsByProject: newOrderedIds,
+              orderedIds: newOrderedIds,
               filteredOrderedIds: newFilteredOrderedIds,
             }
           },
@@ -529,19 +556,27 @@ export default (
 
 // TODO: this computes derived data, so result is always new;
 //       should use memoized selector to fix rerendering
-const getProjectTasklist = (projectId, state) =>
+export const isRequiredToFetchByProjectId = (projectId, state) =>
+  state.byProjectId.hasOwnProperty(projectId)
+
+export const getTaskListDataByProjectId = (projectId, state) =>
   state.byProjectId[projectId]
 
 export const getFilteredOrderedListByProjectId = (projectId, state) => {
-  const { byId, filteredOrderedIds } = getProjectTasklist(projectId, state)
+  const { byId, filteredOrderedIds } = getTaskListDataByProjectId(projectId, state)
   return filteredOrderedIds.map(id => byId[id])
 }
 
 export const getSelectedIdByProjectId = (projectId, state) =>
-  getProjectTasklist(projectId, state).selectedId
+  getTaskListDataByProjectId(projectId, state).selectedId
 
 export const getIsEditingByProjectId = (projectId, state) =>
-  getProjectTasklist(projectId, state).isEditing
+  getTaskListDataByProjectId(projectId, state).isEditing
 
 export const getIsFetchingByProjectId = (projectId, state) =>
-  state.isFetching
+  getTaskListDataByProjectId(projectId, state).isFetching
+
+export const existsTaskByIdAnProjectSlug = (id, projectId, state) => {
+  const byProject = getTaskListDataByProjectId(projectId, state)
+  return byProject ? byProject.allIds.includes(id) : false
+}

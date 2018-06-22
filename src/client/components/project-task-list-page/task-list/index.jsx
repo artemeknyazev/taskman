@@ -113,7 +113,8 @@ class ProjectTaskList extends React.Component {
   }
 
   _onItemCancelChanges() {
-    this.props.onItemStopEditing()
+    const { projectId, selectedId } = this.props
+    this.props.onItemStopEditing(projectId, selectedId)
   }
 
   _onItemApplyChanges() {
@@ -123,13 +124,13 @@ class ProjectTaskList extends React.Component {
   }
 
   _renderEmpty() {
-    const { onItemAddAfter } = this.props
+    const { projectId, onItemAddAfter } = this.props
     const { query } = this.state
     return (
       <div className="task-list__empty">
         <span className="task-list__empty-text">
           {query ? ('No tasks are matching this filter.') : ('There are no tasks in this project.')}
-          <a href="#" onClick={onItemAddAfter}>Add one?</a>
+          <a href="#" onClick={() => onItemAddAfter(projectId, null)}>Add one?</a>
         </span>
       </div>
     )
@@ -189,9 +190,9 @@ class ProjectTaskList extends React.Component {
     } else if (key === 'Enter') {
       this._onFilterApply()
       this._filterInputRef.current.blur()
-      const { list } = this.props
+      const { list, projectId } = this.props
       if (list.length)
-        this.props.onItemSelect(list[0].id)
+        this.props.onItemSelect(projectId, list[0].id)
     }
   }
 

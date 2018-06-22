@@ -38,7 +38,7 @@ const TaskListItem = ({
     data-task-list-item-id={id}
     data-task-list-item-project-id={projectId}
     onMouseDown={(ev) => ev.stopPropagation()}
-    onClick={(ev) => onItemClick && onItemClick(projectId, id) && ev.stopPropagation()}
+    onClick={(ev) => (ev.stopPropagation(), onItemClick && onItemClick(projectId, id))}
   >
     <TaskListItemHandle />
     <div className="task-list-item__id-container">
@@ -63,31 +63,31 @@ const TaskListItem = ({
         className="task-list-item__add-after-button task-list-item__control-button fa-button--circle"
         icon="plus"
         tooltip="Add task after"
-        onClick={(ev) => onItemAddAfter && onItemAddAfter(projectId, id) && ev.stopPropagation()}
+        onClick={(ev) => (ev.stopPropagation(), onItemAddAfter && onItemAddAfter(projectId, id))}
       />
       <FaButton
         className="task-list-item__edit-button task-list-item__control-button fa-button--circle"
         icon="edit"
         tooltip="Edit task"
-        onClick={(ev) => onItemStartEditing && onItemStartEditing(projectId, id) && ev.stopPropagation()}
+        onClick={(ev) => (ev.stopPropagation(), onItemStartEditing && onItemStartEditing(projectId, id))}
       />
       <FaButton
         className="task-list-item__delete-button task-list-item__control-button fa-button--circle"
         icon="trash"
         tooltip="Delete task"
-        onClick={(ev) => onItemDelete && onItemDelete(projectId, id) && ev.stopPropagation()}
+        onClick={(ev) => (ev.stopPropagation(), onItemDelete && onItemDelete(projectId, id))}
       />
       <FaButton
         className="task-list-item__apply-button task-list-item__control-button fa-button--circle"
         icon="check"
         tooltip="Save changes"
-        onClick={(ev) => onItemApplyChanges && onItemApplyChanges(projectId, id) && ev.stopPropagation()}
+        onClick={(ev) => (ev.stopPropagation(), onItemApplyChanges && onItemApplyChanges(projectId, id))}
       />
       <FaButton
         className="task-list-item__cancel-button task-list-item__control-button fa-button--circle"
         icon="times"
         tooltip="Discard changes"
-        onClick={(ev) => onItemCancelChanges && onItemCancelChanges(projectId) && ev.stopPropagation()}
+        onClick={(ev) => (ev.stopPropagation(), onItemCancelChanges && onItemCancelChanges(projectId))}
       />
     </div>
   </div>

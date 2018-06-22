@@ -16,7 +16,7 @@ const ProjectItem = ({
       'project-item': true,
       'project-item--selected': isSelected,
     })}
-    onClick={(ev) => onClick && onClick(id) && ev.stopPropagation()}
+    onClick={(ev) => (ev.stopPropagation(), onClick && onClick(id))}
   >
     <div className="project-item__name-container">
       <span className="project-item__name">
@@ -24,12 +24,12 @@ const ProjectItem = ({
       </span>
     </div>
     <div className="project-item__controls-container">
-        <FaButton
-          className="project-item__open-button project-item__control-button fa-button--circle"
-          icon="door-open"
-          tooltip="Open project"
-          onClick={(ev) => onOpen && onOpen(id) && ev.stopPropagation()}
-        />
+      <FaButton
+        className="project-item__open-button project-item__control-button fa-button--circle"
+        icon="door-open"
+        tooltip="Open project"
+        onClick={(ev) => (ev.stopPropagation(), onOpen && onOpen(id))}
+      />
     </div>
   </div>
 )

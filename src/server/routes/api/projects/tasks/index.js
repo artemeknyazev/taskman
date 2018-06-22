@@ -4,7 +4,7 @@ import { httpOrigin } from 'server/common'
 import {
   prepareFilter,
   getTasks,
-  getTaskById,
+  getTaskByIdAndProjectId,
   addTask,
   editTask,
   deleteTask,
@@ -14,18 +14,20 @@ import {
 // TODO: api-specific error handlers
 let router = Router()
 
-const corsOptions = {
+const corsOptionsRoot = {
   origin: httpOrigin,
-  methods: 'GET,POST,PUT,DELETE,OPTIONS',
+  methods: 'GET,POST,OPTIONS',
 }
 
-router.use(cors(corsOptions))
-router.options('*', cors(corsOptions))
+router.options('/', cors(corsOptionsRoot))
 
-router.get('/', (req, res) => {
+router.get('/', cors(corsOptionsRoot), (req, res) => {
   const { offset, limit, ...filter } = req.query
   getTasks(
-    prepareFilter(filter),
+    prepareFilter({
+      ...filter,
+      projectId: req.apiContext.project.id,
+    }),
     [],
     parseInt(offset),
     parseInt(limit)
@@ -38,10 +40,11 @@ router.get('/', (req, res) => {
   })
 })
 
-router.post('/', (req, res) => {
-  addTask(req.body.data || {}).then(
+router.post('/', cors(corsOptionsRoot), (req, res) => {
+  const data = { ...req.body.data }
+  data.projectId = req.apiContext.project.id
+  addTask(data).then(
     result => {
-      console.log('result', result)
       res.status(200)
       res.set({ 'Content-Type': 'application/json' })
       res.json({
@@ -49,7 +52,6 @@ router.post('/', (req, res) => {
       })
     },
     error => {
-      console.log('error', error)
       res.status(422)
       res.set({ 'Content-Type': 'application/json' })
       res.json({
@@ -59,9 +61,17 @@ router.post('/', (req, res) => {
   )
 })
 
-router.get('/:id', (req, res) => {
+const corsOptionsItem = {
+  origin: httpOrigin,
+  methods: 'GET,PATCH,DELETE,OPTIONS',
+}
+
+router.options('/:id', cors(corsOptionsItem))
+
+router.get('/:id', cors(corsOptionsItem), (req, res) => {
   const id = req.params.id.toString()
-  getTaskById(id).then(
+  const projectId = req.apiContext.project.id
+  getTaskByIdAndProjectId(id, projectId).then(
     result => {
       res.status(200)
       res.set({ 'Content-Type': 'application/json' })
@@ -79,9 +89,10 @@ router.get('/:id', (req, res) => {
   )
 })
 
-router.put('/:id', (req, res) => {
+router.patch('/:id', cors(corsOptionsItem), (req, res) => {
   const id = req.params.id.toString()
-  getTaskById(id).then(
+  const projectId = req.apiContext.project.id
+  getTaskByIdAndProjectId(id, projectId).then(
     () => {
       editTask(id, req.body.data || {}).then(
         result => {
@@ -92,7 +103,6 @@ router.put('/:id', (req, res) => {
           })
         },
         error => {
-          console.log('error', error)
           res.status(422)
           res.set({ 'Content-Type': 'application/json' })
           res.json({
@@ -105,19 +115,20 @@ router.put('/:id', (req, res) => {
       res.status(404)
       res.set({ 'Content-Type': 'application/json' })
       res.json({
-        error: "Task not found",
+        error: `Task ${id} not found in project ${projectId}`,
       })
     }
   )
 })
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', cors(corsOptionsItem), (req, res) => {
   const id = req.params.id.toString()
-  getTaskById(id).then(
+  const projectId = req.apiContext.project.id
+  getTaskByIdAndProjectId(id, projectId).then(
     () => {
       deleteTask(id).then(() => {
         res.status(200)
-        res.send({
+        res.json({
           result: true,
         })
       })
@@ -126,7 +137,7 @@ router.delete('/:id', (req, res) => {
       res.status(404)
       res.set({ 'Content-Type': 'application/json' })
       res.json({
-        error: "Task not found",
+        error: `Task ${id} not found in project ${projectId}`,
       })
     }
   )

@@ -5,6 +5,7 @@ const API_URL = "http://localhost:8080/api"
 const METHOD_GET = 'GET'
 const METHOD_POST = 'POST'
 const METHOD_PUT = 'PUT'
+const METHOD_PATCH = 'PATCH'
 const METHOD_DELETE = 'DELETE'
 
 const apiFetch = (
@@ -71,6 +72,16 @@ export const apiPut = (
   apiFetch(
     url,
     METHOD_PUT,
+    data,
+  )
+
+export const apiPatch = (
+  url,
+  data,
+) =>
+  apiFetch(
+    url,
+    METHOD_PATCH,
     data,
   )
 

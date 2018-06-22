@@ -1,7 +1,7 @@
 import {
   apiGet,
   apiPost,
-  apiPut,
+  apiPatch,
   apiDelete,
 } from './api-fetch'
 
@@ -24,42 +24,47 @@ const prepareFilterQuery = (
   return result
 }
 
-export const getTasks = (
+export const getTasksByProjectId = (
+  projectId,
   filter = {},
   offset = undefined,
   limit = undefined,
 ) =>
   apiGet(
-    '/tasks?' + prepareFilterQuery(filter, offset, limit),
+    `/projects/${projectId}/tasks?` + prepareFilterQuery(filter, offset, limit),
   )
 
-export const getTaskById = (
-  id
+export const getTaskByIdAndProjectId = (
+  id,
+  projectId,
 ) =>
   apiGet(
-    '/tasks/' + id,
+    `/projects/${projectId}/tasks/${id}`,
   )
 
-export const addTask = (
+export const addTaskByProjectId = (
+  projectId,
   data
 ) =>
   apiPost(
-    '/tasks',
+    `/projects/${projectId}/tasks`,
     { data }
   )
 
-export const editTaskById = (
+export const editTaskByIdAndProjectId = (
   id,
+  projectId,
   data,
 ) =>
-  apiPut(
-    '/tasks/' + id,
+  apiPatch(
+    `/projects/${projectId}/tasks/${id}`,
     { data }
   )
 
-export const deleteTaskById = (
-  id
+export const deleteTaskByIdAndProjectId = (
+  id,
+  projectId,
 ) =>
   apiDelete(
-    '/tasks/' + id,
+    `/projects/${projectId}/tasks/${id}`,
   )

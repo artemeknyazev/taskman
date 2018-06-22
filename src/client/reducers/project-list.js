@@ -3,9 +3,7 @@ import { sortItemsByField } from 'utils'
 import {
   getProjects,
 } from 'client/api/projects'
-import {
-  getProjectList
-} from './index'
+import * as Root from './index'
 
 /* ----------------------------------- ACTIONS ----------------------------------- */
 
@@ -26,6 +24,12 @@ export const fetchProjects = () =>
       ({ error }) => dispatch(fetchProjectsAction(error)),
     )
   }
+export const fetchProjectsIfRequired = () =>
+  (dispatch, getState) => {
+    if (Root.isRequiredToFetchProjects(getState()))
+      return dispatch(fetchProjects())
+    return Promise.resolve()
+  }
 
 const SET_SELECTION = 'PROJECT_LIST/SET_SELECTION'
 export const setSelection = (selectedId) => ({
@@ -36,7 +40,7 @@ export const clearSelection = () =>
   setSelection(null)
 export const moveSelectionUp = () =>
   (dispatch, getState) => {
-    const { selectedId, orderedIds } = getProjectList(getState())
+    const { selectedId, orderedIds } = Root.getAllProjectListData(getState())
     if (orderedIds.length) {
       const index = orderedIds.indexOf(selectedId)
       if (index <= 0)
@@ -48,7 +52,7 @@ export const moveSelectionUp = () =>
   }
 export const moveSelectionDown = () =>
   (dispatch, getState) => {
-    const { selectedId, orderedIds } = getProjectList(getState())
+    const { selectedId, orderedIds } = Root.getAllProjectListData(getState())
     if (orderedIds.length) {
       const index = orderedIds.indexOf(selectedId)
       if (index === -1 || index >= orderedIds.length - 1)
@@ -61,14 +65,14 @@ export const moveSelectionDown = () =>
 
 export const openProject = (id) =>
   (dispatch, getState) => {
-    const { byId } = getProjectList(getState())
+    const { byId } = Root.getAllProjectListData(getState())
     const slug = byId[id].slug
     return dispatch(push(`/projects/${slug}`))
   }
 
 export const openSelectedProject = () =>
   (dispatch, getState) => {
-    const { selectedId } = getProjectList(getState())
+    const { selectedId } = Root.getAllProjectListData(getState())
     return dispatch(openProject(selectedId))
   }
 
@@ -76,6 +80,7 @@ export const openSelectedProject = () =>
 
 const reducer = (
   state = {
+    isInited: false,
     isFetching: false,
     byId: {},
     allIds: [],
@@ -99,6 +104,7 @@ const reducer = (
         let orderedIds = sortItemsByField(allIds, byId, 'title')
         return {
           ...state,
+          isInited: true,
           isFetching: false,
           byId,
           allIds,
@@ -119,7 +125,9 @@ export default reducer
 
 /* ---------------------------------- SELECTORS ---------------------------------- */
 
-// TODO: memoized selector
+export const isRequiredToFetch = (state) =>
+  state.isInited
+
 export const getOrderedList = (state) =>
   state.orderedIds.map(id => state.byId[id])
 
@@ -131,3 +139,9 @@ export const getIsFetching = (state) =>
 
 export const getProjectIdByProjectSlug = (slug, state) =>
   state.allIds.find(id => state.byId[id].slug === slug)
+
+export const getAllProjectIds = (state) =>
+  state.allIds
+
+export const existsProjectBySlug = (slug, state) =>
+  state.allIds.findIndex(id => state.byId[id].slug === slug) !== -1
