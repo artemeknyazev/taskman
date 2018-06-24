@@ -8,6 +8,7 @@ Taskman (from *Task* *Man*ager) is a sample task (currently just todo) managemen
 # Clone it
 > git clone https://github.com/artemeknyazev/taskman.git
 > cd taskman
+> npm install
 
 # Generate sample database
 > bash db/run.sh
@@ -15,6 +16,6 @@ Taskman (from *Task* *Man*ager) is a sample task (currently just todo) managemen
 # Build
 > npm run build
 
-# Starts
+# Start
 > npm start
 ```
