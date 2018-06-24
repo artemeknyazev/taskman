@@ -18,4 +18,7 @@ Taskman (from *Task* *Man*ager) is a sample task (currently just todo) managemen
 
 # Start
 > npm start
+
+# Add taskman.localhost to /etc/hosts
+# Open http://taskman.localhost:8080 in your browser
 ```
