@@ -563,18 +563,26 @@ export const getTaskListDataByProjectId = (projectId, state) =>
   state.byProjectId[projectId]
 
 export const getFilteredOrderedListByProjectId = (projectId, state) => {
-  const { byId, filteredOrderedIds } = getTaskListDataByProjectId(projectId, state)
+  const byProject = getTaskListDataByProjectId(projectId, state)
+  if (!byProject) return []
+  const { byId, filteredOrderedIds } = byProject
   return filteredOrderedIds.map(id => byId[id])
 }
 
-export const getSelectedIdByProjectId = (projectId, state) =>
-  getTaskListDataByProjectId(projectId, state).selectedId
+export const getSelectedIdByProjectId = (projectId, state) => {
+  const byProject = getTaskListDataByProjectId(projectId, state)
+  return byProject ? byProject.selectedId : null
+}
 
-export const getIsEditingByProjectId = (projectId, state) =>
-  getTaskListDataByProjectId(projectId, state).isEditing
+export const getIsEditingByProjectId = (projectId, state) => {
+  const byProject = getTaskListDataByProjectId(projectId, state)
+  return byProject ? byProject.isEditing : false
+}
 
-export const getIsFetchingByProjectId = (projectId, state) =>
-  getTaskListDataByProjectId(projectId, state).isFetching
+export const getIsFetchingByProjectId = (projectId, state) => {
+  const byProject = getTaskListDataByProjectId(projectId, state)
+  return byProject ? byProject.isFetching : false
+}
 
 export const existsTaskByIdAnProjectSlug = (id, projectId, state) => {
   const byProject = getTaskListDataByProjectId(projectId, state)

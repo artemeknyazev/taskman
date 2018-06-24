@@ -8,16 +8,14 @@ fontawesome.library.add(faPlus, faEdit, faTrash, faCheck, faTimes, faSearch,
 
 import React from 'react'
 import { Redirect, Route, Switch }from 'react-router-dom'
+import { connect } from 'react-redux'
+import * as Root from 'client/reducers'
 
 import ProjectTaskListPage from 'client/components/project-task-list-page'
 import ProjectListPage from 'client/components/project-list-page'
 import NotFoundPage from 'client/components/not-found-page'
 
-const Home = () => <div>Home</div>
-const Projects = () => <div>Projects</div>
-const Tasks = () => <div>Tasks</div>
-
-const App = () => (
+const App = ({ state }) => (
   <Switch>
     <Route exact path="/" render={() => (
       <Redirect to="/projects" />
@@ -26,13 +24,14 @@ const App = () => (
       <ProjectListPage />
     )} />
     <Route exact path="/projects/:projectSlug" render={({ match }) => (
-      <Redirect to={`/projects/${match.params.projectSlug}/tasks`} />
+      Root.existsProjectBySlug(match.params.projectSlug, state)
+        ? <Redirect to={`/projects/${match.params.projectSlug}/tasks`} />
+        : <NotFoundPage />
     )} />
     <Route exact path="/projects/:projectSlug/tasks" render={({ match }) => (
-      <ProjectTaskListPage />
-    )} />
-    <Route exact path="/projects/:projectSlug/tasks/:taskId" render={({ match }) => (
-      `Task ${match.params.taskId} for project ${match.params.projectSlug}`
+      Root.existsProjectBySlug(match.params.projectSlug, state)
+        ? <ProjectTaskListPage />
+        : <NotFoundPage />
     )} />
     <Route exact path="/404" render={() => (
       <NotFoundPage />
@@ -42,4 +41,9 @@ const App = () => (
     )} />
   </Switch>
 )
-export default App
+
+const mapStateToProps = (state) => ({
+  state,
+})
+
+export default connect(mapStateToProps)(App)
