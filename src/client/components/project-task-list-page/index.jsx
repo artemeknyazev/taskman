@@ -4,6 +4,8 @@ import { connect } from 'react-redux'
 import { clearSelectionInCurrentProject } from 'client/reducers/task-list'
 import shortcuts from './shortcuts'
 import DocumentShortcuts from 'client/components/common/document-shortcuts'
+import NavigationMenu from 'client/components/common/navigation-menu'
+import * as Root from 'client/reducers'
 import TaskList from './task-list'
 
 class ProjectTaskListPage extends React.PureComponent {
@@ -25,16 +27,39 @@ class ProjectTaskListPage extends React.PureComponent {
   }
 
   render() {
+    const { projectSlug, projectName } = this.props
     return (
       <DocumentShortcuts
         shortcuts={shortcuts}
         isPreventKeyboardScroll={true}
         dispatch={this.props.dispatch}
       >
+        <NavigationMenu
+          links={[
+            {
+              path: '/',
+              title: 'Home',
+            }, {
+              path: '/projects',
+              title: 'Projects',
+            }, {
+              path: `/projects/${projectSlug}`,
+              title: projectName,
+            }, {
+              path: `/projects/${projectSlug}/tasks`,
+              title: 'Tasks',
+            }
+          ]}
+        />
         <TaskList />
       </DocumentShortcuts>
     )
   }
 }
 
-export default connect()(ProjectTaskListPage)
+const mapStateToProps = (state) => ({
+  projectSlug: Root.getCurrentProjectSlug(state),
+  projectName: Root.getCurrentProjectName(state),
+})
+
+export default connect(mapStateToProps)(ProjectTaskListPage)

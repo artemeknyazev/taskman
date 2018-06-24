@@ -9,14 +9,9 @@
   outline: 0 none !important;
   padding: 0;
   text-align: center;
-
-  .button__text {
-    color: #666;
-  }
+  color: #666;
 
   &:hover {
-    .button__text {
-      color: #aaa;
-    }
+    color: #aaa;
   }
 }

@@ -2,9 +2,12 @@
 import fontawesome from '@fortawesome/fontawesome'
 import {
   faPlus, faEdit, faTrash, faCheck, faTimes, faSearch, faTimesCircle, faDoorOpen,
+  faChevronLeft, faChevronRight, faArrowLeft, faArrowRight,
 } from '@fortawesome/fontawesome-free-solid'
-fontawesome.library.add(faPlus, faEdit, faTrash, faCheck, faTimes, faSearch,
-  faTimesCircle, faDoorOpen)
+fontawesome.library.add(
+  faPlus, faEdit, faTrash, faCheck, faTimes, faSearch, faTimesCircle, faDoorOpen,
+  faChevronLeft, faChevronRight, faArrowLeft, faArrowRight,
+)
 
 import React from 'react'
 import { Redirect, Route, Switch }from 'react-router-dom'

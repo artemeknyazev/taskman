@@ -1,0 +1,40 @@
+.navigation-menu {
+  display: flex;
+  height: 3em;
+  padding: 0 .4em;
+
+  .navigation-menu__back-container {
+    flex: 0 0 auto;
+
+    .navigation-menu__back {
+      height: 100%;
+      font-size: 1.3em;
+      padding: 0 0.2em;
+      
+      &:not(:hover) {
+        color: #a0a0a0;
+      }
+    }
+  }
+  .navigation-menu__links-container {
+    display: flex;
+    flex: 1 1 auto;
+
+    .navigation-menu__link-list-element {
+      flex: 0 0 auto;
+    }
+
+    .navigation-menu__link {
+      height: 100%;
+      font-size: .8em;
+      padding-top: 0.1em;
+      padding-left: 0.5em;
+      padding-right: 0.8em;
+    }
+    .navigation-menu__list-separator {
+      height: 100%;
+      margin-right: 0.2em;
+      color: #999;
+    }
+  }
+}

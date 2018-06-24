@@ -140,6 +140,11 @@ export const getIsFetching = (state) =>
 export const getProjectIdByProjectSlug = (slug, state) =>
   state.allIds.find(id => state.byId[id].slug === slug)
 
+export const getProjectNameByProjectSlug = (slug, state) => {
+  const id = state.allIds.find(id => state.byId[id].slug === slug)
+  return id !== undefined ? state.byId[id].name : undefined
+}
+
 export const getAllProjectIds = (state) =>
   state.allIds
 

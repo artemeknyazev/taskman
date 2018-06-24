@@ -70,13 +70,11 @@ ProjectList.propTypes = {
   selectedId: PropTypes.string,
 }
 
-const mapStateToProps = (state) => {
-  return ({
-    list: getProjectListOrderedList(state),
-    selectedId: getProjectListSelectedId(state),
-    isFetching: getProjectListIsFetching(state),
-  })
-}
+const mapStateToProps = (state) => ({
+  list: getProjectListOrderedList(state),
+  selectedId: getProjectListSelectedId(state),
+  isFetching: getProjectListIsFetching(state),
+})
 
 const mapDispatchToProps = (dispatch) => ({
   onItemClick: (id) => dispatch(setSelection(id)),

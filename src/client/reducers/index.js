@@ -43,14 +43,28 @@ export const getProjectListIsFetching = (state) =>
 export const getProjectIdByProjectSlug = (slug, state) =>
   ProjectList.getProjectIdByProjectSlug(slug, getAllProjectListData(state))
 
+export const getProjectNameByProjectSlug = (slug, state) =>
+  ProjectList.getProjectNameByProjectSlug(slug, getAllProjectListData(state))
+
 export const getAllProjectIds = (state) =>
   ProjectList.getAllProjectIds(getAllProjectListData(state))
 
 export const getCurrentProjectId = (state) => {
   const { pathname } = state.router.location
   const matched = pathname.match(/^\/projects\/([^\/]+)/)
-  if (!matched) return null
-  return getProjectIdByProjectSlug(matched[1], state)
+  return matched ? getProjectIdByProjectSlug(matched[1], state) : null
+}
+
+export const getCurrentProjectSlug = (state) => {
+  const { pathname } = state.router.location
+  const matched = pathname.match(/^\/projects\/([^\/]+)/)
+  return matched ? matched[1] : null
+}
+
+export const getCurrentProjectName = (state) => {
+  const { pathname } = state.router.location
+  const matched = pathname.match(/^\/projects\/([^\/]+)/)
+  return matched ? getProjectNameByProjectSlug(matched[1], state) : null
 }
 
 export const existsProjectBySlug = (slug, state) =>

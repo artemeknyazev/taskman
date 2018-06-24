@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { clearSelection } from 'client/reducers/project-list'
 import shortcuts from './shortcuts'
 import DocumentShortcuts from 'client/components/common/document-shortcuts'
+import NavigationMenu from 'client/components/common/navigation-menu'
 import ProjectList from './project-list'
 
 class ProjectListPage extends React.PureComponent {
@@ -31,6 +32,17 @@ class ProjectListPage extends React.PureComponent {
         isPreventKeyboardScroll={true}
         dispatch={this.props.dispatch}
       >
+        <NavigationMenu
+          links={[
+            {
+              path: '/',
+              title: 'Home',
+            }, {
+              path: '/projects',
+              title: 'Projects',
+            }
+          ]}
+        />
         <ProjectList />
       </DocumentShortcuts>
     )
