@@ -16,9 +16,31 @@ html {
     #root {
       height: 100%;
 
-      .task-list {
-        margin: 0 auto;
+      .app-page {
+        box-sizing: border-box;
         height: 100%;
+        width: 100%;
+        margin: 0 auto;
+      }
+
+      @media screen {
+        @media (max-width: 700px) {
+          .app-page {
+            width: 100%;
+          }
+        }
+        @media (min-width: 700px) and (max-width: 900px) {
+          .app-page {
+            min-width: 700px;
+            width: 90%;
+            max-width: 810px;
+          }
+        }
+        @media (min-width: 900px) {
+          .app-page {
+            width: 810px;
+          }
+        }
       }
     }
 

@@ -7,6 +7,7 @@ import DocumentShortcuts from 'client/components/common/document-shortcuts'
 import NavigationMenu from 'client/components/common/navigation-menu'
 import * as Root from 'client/reducers'
 import TaskList from './task-list'
+import './index.scss'
 
 class ProjectTaskListPage extends React.PureComponent {
   constructor(props) {
@@ -34,24 +35,23 @@ class ProjectTaskListPage extends React.PureComponent {
         isPreventKeyboardScroll={true}
         dispatch={this.props.dispatch}
       >
-        <NavigationMenu
-          links={[
-            {
-              path: '/',
-              title: 'Home',
-            }, {
-              path: '/projects',
-              title: 'Projects',
-            }, {
-              path: `/projects/${projectSlug}`,
-              title: projectName,
-            }, {
-              path: `/projects/${projectSlug}/tasks`,
-              title: 'Tasks',
-            }
-          ]}
-        />
-        <TaskList />
+        <div className="project-task-list-page app-page">
+          <NavigationMenu
+            links={[
+              {
+                path: '/',
+                title: 'Home',
+              }, {
+                path: '/projects',
+                title: 'Projects',
+              }, {
+                path: `/projects/${projectSlug}/tasks`,
+                title: projectName + ' tasks',
+              }
+            ]}
+          />
+          <TaskList />
+        </div>
       </DocumentShortcuts>
     )
   }

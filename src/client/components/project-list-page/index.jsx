@@ -32,6 +32,7 @@ class ProjectListPage extends React.PureComponent {
         isPreventKeyboardScroll={true}
         dispatch={this.props.dispatch}
       >
+      <div className="project-list-page app-page">
         <NavigationMenu
           links={[
             {
@@ -44,6 +45,7 @@ class ProjectListPage extends React.PureComponent {
           ]}
         />
         <ProjectList />
+      </div>
       </DocumentShortcuts>
     )
   }

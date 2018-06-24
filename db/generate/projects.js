@@ -30,8 +30,9 @@ const prepareSlug = (name) =>
   name.toLowerCase().replace(/[ _\-:;]/g, '-')
 
 const generate = (projectCount) => {
+  const now = new Date().getTime()
   let result = []
-  for (let i = 1; i <= projectCount; ++i) {
+  for (let i = 2; i <= projectCount; ++i) {
     const now = new Date().getTime()
     const createdAt = Math.floor(now + (Math.random() - 1) * 100000)
     const updatedAt = Math.floor(createdAt + Math.random() * 100000)
@@ -42,12 +43,19 @@ const generate = (projectCount) => {
       id: i.toString(),
       name,
       slug: prepareSlug(name),
-      //status: Math.random() < 0.95 ? 'active' : 'inactive',
       status: 'active',
       createdAt,
       updatedAt,
     })
   }
+  result.push({
+    id: (projectCount + 1).toString(),
+    name: 'Empty project',
+    slug: 'empty-project',
+    status: 'active',
+    createdAt: now,
+    updatedAt: now,
+  })
   return result
 }
 

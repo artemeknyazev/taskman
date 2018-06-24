@@ -19,7 +19,7 @@ class NavigationMenu extends React.Component {
   _navigateBack() {
     const { links } = this.props
     if (links.length > 1)
-      this._navigateTo(links[links.length - 1].path)
+      this._navigateTo(links[links.length - 2].path)
   }
 
   _navigateTo(path) {

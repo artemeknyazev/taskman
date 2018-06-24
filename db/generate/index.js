@@ -8,8 +8,8 @@ const outputPath = path.resolve(__dirname, '..', 'db.json')
 process.stdout.write(`Started generating database\n`)
 process.stdout.write(`Output path is ${outputPath}\n`)
 
-const taskCount = 20
-const projectCount = 2
+const taskCount = 30
+const projectCount = 3
 const userCount = 10
 
 Promise.all([

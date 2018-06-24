@@ -1,0 +1,13 @@
+.project-task-list-page {
+  display: flex;
+  flex-direction: column;
+
+  .navigation-menu {
+    flex: 0 0 auto;
+  }
+
+  .task-list {
+    flex: 1 1 auto;
+    height: 100%;
+  }
+}

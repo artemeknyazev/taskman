@@ -109,13 +109,8 @@ export const addAfterSelectedItemInCurrentProject = () =>
   (dispatch, getState) => {
     const state = getState()
     const projectId = Root.getCurrentProjectId(state)
-    const { selectedId, filteredOrderedIds } = Root.getTaskListDataByProjectId(projectId, state)
-    return dispatch(addItemAfter(
-      projectId,
-      selectedId === null
-        ? filteredOrderedIds.length - 1
-        : filteredOrderedIds.indexOf(selectedId)
-    ))
+    const { selectedId } = Root.getTaskListDataByProjectId(projectId, state)
+    return dispatch(addItemAfter(projectId, selectedId))
   }
 
 // TODO: handle delete fail
