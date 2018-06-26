@@ -2,10 +2,10 @@
 // http://redux.js.org/recipes/ServerRendering.html#security-considerations
 // NOTE: https://tools.ietf.org/html/rfc2606 - use reserved TLDs
 export default ({
-  title = '',
+  title = 'Taskman',
   content = '',
   initialState = undefined,
-  domain = 'taskman.local',
+  domain = 'taskman.localhost',
   port = '8080',
 }) => (
 `<!doctype html>

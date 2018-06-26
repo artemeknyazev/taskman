@@ -25,8 +25,8 @@ Taskman (from *Task* *Man*ager) is a sample task (currently just todo) managemen
 
 ## Usage
 
-Currently, there are two pages: project list and project task list. Both support keyboard shortcuts: up/down arrows move selection, enter opens project or starts task editing.
+Currently, there are two pages: project list and project task list. Both support keyboard shortcuts: up/down arrows move selection, Enter opens a project or starts task editing.
 
-On task list one can press Ctrl+Enter to add a task after a selected one, press Delete or Backspace to delete a selected one, and press Ctrl+Arrow Up/Arrow Down to move a task up/down one step. Tasks can also be reordered by dragging using a handle visible when hovering the task item. Escape on a task list clears selection.
+On a project task list one can press Ctrl+Enter to add a task after the selected one, press Delete or Backspace to delete the selected one, and press Ctrl+Arrow Up/Arrow Down to move the selected task up/down one step. Tasks can also be reordered by dragging using a handle visible when hovering a task item. Escape on a project task list clears selection.
 
-Enter on search field selects a first filtered task, Escape blurs the input.
+Enter on a search field selects the first filtered task, Escape blurs the search field.
